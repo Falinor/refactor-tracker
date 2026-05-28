@@ -1,0 +1,8 @@
+refactors:
+  - id: regressed
+    name: Regressed task
+    detect:
+      done:
+        command: "echo 2"
+      total:
+        command: "echo 5"
