@@ -1,0 +1,4 @@
+node_modules/
+dist/
+.refactor-tracker-cache.json
+*.log
