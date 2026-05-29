@@ -51,9 +51,7 @@ export function expandEnv<T>(value: T): T {
   }
   if (Array.isArray(value)) return value.map((v) => expandEnv(v)) as unknown as T;
   if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, expandEnv(v)]),
-    ) as T;
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, expandEnv(v)])) as T;
   }
   return value;
 }

@@ -14,21 +14,21 @@
 
 ## File Structure
 
-| File | Responsibility |
-|---|---|
-| `src/types.ts` | Shared interfaces: `TaskResult`, `Report`, `Reporter`. Pure types, no behavior. |
-| `src/config.ts` | zod schema, `parseConfig(raw)`, `loadConfig(path)`, `expandEnv` (env var expansion scoped to reporters). |
-| `src/runner.ts` | `runCommand(command, cwd?)` — wraps execa, runs a shell string, returns `{stdout, exitCode}`. |
-| `src/detect.ts` | `resolveDetection(detect, run, cwd?)` — resolves the four detection shapes into `{done, total}`. |
-| `src/cache.ts` | `readCache(path)` / `writeCache(path, cache)` — JSON cache I/O, missing file → `{}`. |
-| `src/engine.ts` | `runEngine(config, options)` — orchestrates detection, delta computation, cache write, builds `Report`. |
-| `src/reporters/stdout.ts` | `StdoutReporter` + pure `formatTable(report)`. Default reporter. |
-| `src/reporters/json.ts` | `JsonReporter` — writes the `Report` as JSON. |
-| `src/reporters/markdown.ts` | `MarkdownReporter` + pure `formatMarkdown(report)`. |
-| `src/reporters/index.ts` | `createReporters(configs, baseDir)` — factory/registry + custom module loader. |
-| `src/cli.ts` | citty command + `execute(options)` core; `--config`, `--dry-run`, `--fail-on-regression`. |
-| `src/index.ts` | Package entry — re-exports `Report`, `TaskResult`, `Reporter` for custom-reporter authors. |
-| `tests/*.test.ts` | Vitest tests mirroring `src/`. |
+| File                        | Responsibility                                                                                           |
+| --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `src/types.ts`              | Shared interfaces: `TaskResult`, `Report`, `Reporter`. Pure types, no behavior.                          |
+| `src/config.ts`             | zod schema, `parseConfig(raw)`, `loadConfig(path)`, `expandEnv` (env var expansion scoped to reporters). |
+| `src/runner.ts`             | `runCommand(command, cwd?)` — wraps execa, runs a shell string, returns `{stdout, exitCode}`.            |
+| `src/detect.ts`             | `resolveDetection(detect, run, cwd?)` — resolves the four detection shapes into `{done, total}`.         |
+| `src/cache.ts`              | `readCache(path)` / `writeCache(path, cache)` — JSON cache I/O, missing file → `{}`.                     |
+| `src/engine.ts`             | `runEngine(config, options)` — orchestrates detection, delta computation, cache write, builds `Report`.  |
+| `src/reporters/stdout.ts`   | `StdoutReporter` + pure `formatTable(report)`. Default reporter.                                         |
+| `src/reporters/json.ts`     | `JsonReporter` — writes the `Report` as JSON.                                                            |
+| `src/reporters/markdown.ts` | `MarkdownReporter` + pure `formatMarkdown(report)`.                                                      |
+| `src/reporters/index.ts`    | `createReporters(configs, baseDir)` — factory/registry + custom module loader.                           |
+| `src/cli.ts`                | citty command + `execute(options)` core; `--config`, `--dry-run`, `--fail-on-regression`.                |
+| `src/index.ts`              | Package entry — re-exports `Report`, `TaskResult`, `Reporter` for custom-reporter authors.               |
+| `tests/*.test.ts`           | Vitest tests mirroring `src/`.                                                                           |
 
 Tests live in `tests/` (not bundled — only `cli.ts` and `index.ts` are tsdown entries). Pure functions (`formatTable`, `formatMarkdown`, `resolveDetection`, `parseConfig`) are tested directly; I/O is tested against `os.tmpdir()` temp files; the shell runner and custom-reporter loading use real, deterministic commands/fixtures.
 
@@ -37,6 +37,7 @@ Tests live in `tests/` (not bundled — only `cli.ts` and `index.ts` are tsdown 
 ### Task 1: Project scaffold
 
 **Files:**
+
 - Create: `package.json`, `tsconfig.json`, `tsdown.config.ts`, `.gitignore`, `src/types.ts`
 
 - [ ] **Step 1: Initialize git**
@@ -130,13 +131,13 @@ export interface TaskResult {
   name: string;
   done: number;
   total: number;
-  percentage: number;      // 0–100, rounded
-  delta: number | null;    // change in `done` vs previous run; null on first run
+  percentage: number; // 0–100, rounded
+  delta: number | null; // change in `done` vs previous run; null on first run
 }
 
 export interface Report {
   tasks: TaskResult[];
-  timestamp: string;       // ISO-8601
+  timestamp: string; // ISO-8601
   hasChanges: boolean;
 }
 
@@ -162,6 +163,7 @@ git commit -m "chore: scaffold refactor-tracker package"
 ### Task 2: Config parsing and validation
 
 **Files:**
+
 - Create: `src/config.ts`
 - Test: `tests/config.test.ts`
 
@@ -298,9 +300,7 @@ export function expandEnv<T>(value: T): T {
   }
   if (Array.isArray(value)) return value.map((v) => expandEnv(v)) as unknown as T;
   if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, expandEnv(v)]),
-    ) as T;
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, expandEnv(v)])) as T;
   }
   return value;
 }
@@ -333,6 +333,7 @@ git commit -m "feat: add config schema, parsing, and env expansion"
 ### Task 3: Shell command runner
 
 **Files:**
+
 - Create: `src/runner.ts`
 - Test: `tests/runner.test.ts`
 
@@ -407,9 +408,10 @@ git commit -m "feat: add shell command runner"
 
 ### Task 4: Detection shape resolver
 
-> **Spec note for the reviewer:** The spec's table states binary detection is `command exits 0 = done`. This task implements exactly that (exit code 0 → `done = 1`). The spec's *inline example* (`process.exit(startsWith('3') ? 1 : 0)`) appears to invert this — it exits 1 when the lib is upgraded. Implement per the table (exit 0 = done) and flag the example to the user when reporting completion so they can correct the example or confirm the rule.
+> **Spec note for the reviewer:** The spec's table states binary detection is `command exits 0 = done`. This task implements exactly that (exit code 0 → `done = 1`). The spec's _inline example_ (`process.exit(startsWith('3') ? 1 : 0)`) appears to invert this — it exits 1 when the lib is upgraded. Implement per the table (exit 0 = done) and flag the example to the user when reporting completion so they can correct the example or confirm the rule.
 
 **Files:**
+
 - Create: `src/detect.ts`
 - Test: `tests/detect.test.ts`
 
@@ -555,6 +557,7 @@ git commit -m "feat: add detection shape resolver"
 ### Task 5: Cache I/O
 
 **Files:**
+
 - Create: `src/cache.ts`
 - Test: `tests/cache.test.ts`
 
@@ -645,6 +648,7 @@ git commit -m "feat: add cache read/write"
 ### Task 6: Engine
 
 **Files:**
+
 - Create: `src/engine.ts`
 - Test: `tests/engine.test.ts`
 
@@ -751,8 +755,8 @@ export interface EngineOptions {
   cachePath: string;
   cwd?: string;
   dryRun?: boolean;
-  run?: CommandRunner;     // injectable for tests; defaults to the real shell runner
-  now?: () => Date;        // injectable for tests; defaults to wall clock
+  run?: CommandRunner; // injectable for tests; defaults to the real shell runner
+  now?: () => Date; // injectable for tests; defaults to wall clock
 }
 
 export async function runEngine(config: Config, options: EngineOptions): Promise<Report> {
@@ -798,6 +802,7 @@ git commit -m "feat: add engine orchestrating detection, delta, and cache"
 ### Task 7: stdout reporter
 
 **Files:**
+
 - Create: `src/reporters/stdout.ts`
 - Test: `tests/reporters/stdout.test.ts`
 
@@ -843,8 +848,7 @@ import type { Reporter, Report } from '../types.js';
 export function formatTable(report: Report): string {
   return report.tasks
     .map((t) => {
-      const delta =
-        t.delta === null ? '' : t.delta > 0 ? ` (+${t.delta})` : ` (${t.delta})`;
+      const delta = t.delta === null ? '' : t.delta > 0 ? ` (+${t.delta})` : ` (${t.delta})`;
       return `${t.name}: ${t.done}/${t.total} (${t.percentage}%)${delta}`;
     })
     .join('\n');
@@ -874,6 +878,7 @@ git commit -m "feat: add stdout reporter"
 ### Task 8: json reporter
 
 **Files:**
+
 - Create: `src/reporters/json.ts`
 - Test: `tests/reporters/json.test.ts`
 
@@ -948,6 +953,7 @@ git commit -m "feat: add json reporter"
 ### Task 9: markdown reporter
 
 **Files:**
+
 - Create: `src/reporters/markdown.ts`
 - Test: `tests/reporters/markdown.test.ts`
 
@@ -1004,12 +1010,16 @@ import type { Reporter, Report } from '../types.js';
 
 export function formatMarkdown(report: Report): string {
   const header = '| Refactor | Done | Total | % |\n| --- | --- | --- | --- |';
-  const rows = report.tasks.map(
-    (t) => `| ${t.name} | ${t.done} | ${t.total} | ${t.percentage}% |`,
-  );
-  return ['# Refactor progress', '', `_Updated: ${report.timestamp}_`, '', header, ...rows, ''].join(
-    '\n',
-  );
+  const rows = report.tasks.map((t) => `| ${t.name} | ${t.done} | ${t.total} | ${t.percentage}% |`);
+  return [
+    '# Refactor progress',
+    '',
+    `_Updated: ${report.timestamp}_`,
+    '',
+    header,
+    ...rows,
+    '',
+  ].join('\n');
 }
 
 export class MarkdownReporter implements Reporter {
@@ -1039,6 +1049,7 @@ git commit -m "feat: add markdown reporter"
 ### Task 10: Reporter registry
 
 **Files:**
+
 - Create: `src/reporters/index.ts`
 - Test: `tests/reporters/index.test.ts`, `tests/fixtures/custom-reporter.ts`
 
@@ -1175,6 +1186,7 @@ git commit -m "feat: add reporter registry and custom loader"
 ### Task 11: CLI (citty)
 
 **Files:**
+
 - Create: `src/cli.ts`
 - Test: `tests/cli.test.ts`, `tests/fixtures/regression-config.yml`
 
@@ -1191,9 +1203,9 @@ refactors:
     name: Regressed task
     detect:
       done:
-        command: "echo 2"
+        command: 'echo 2'
       total:
-        command: "echo 5"
+        command: 'echo 5'
 ```
 
 - [ ] **Step 2: Write the failing test**
@@ -1305,7 +1317,8 @@ export async function execute(options: ExecuteOptions): Promise<number> {
 export const main = defineCommand({
   meta: {
     name: 'refactor-tracker',
-    description: 'Run configurable shell detections to track and report technical-refactor progress.',
+    description:
+      'Run configurable shell detections to track and report technical-refactor progress.',
   },
   args: {
     config: {
@@ -1358,6 +1371,7 @@ git commit -m "feat: add citty CLI with dry-run and fail-on-regression"
 ### Task 12: Package entry, build, and end-to-end smoke test
 
 **Files:**
+
 - Create: `src/index.ts`, `README.md`
 - Verify: `dist/cli.js` runs against a fixture config
 
@@ -1417,20 +1431,20 @@ git commit -m "feat: add package entry, build config, and docs"
 
 ## Spec Coverage Check
 
-| Spec requirement | Task(s) |
-|---|---|
-| Config schema `.tech-refactors.yml`, `--config` override | 2, 11 |
-| Detection shapes: done+total, done+remaining, remaining+total, binary | 4 |
-| "Command must print a non-negative integer" enforcement | 4 |
-| Env var expansion for reporter config (`$VAR`), never stored | 2 |
-| Raw shell commands, language-agnostic | 3 |
-| Data model (`TaskResult`, `Report`, `Reporter`) | 1, 7–10 |
-| `stdout` / `json` / `markdown` reporters | 7, 8, 9 |
-| Custom reporters via JS/TS module | 10 |
-| Cache `.refactor-tracker-cache.json` (gitignored), delta computation | 1, 5, 6 |
-| `hasChanges` flag for reporter short-circuiting | 6 |
-| CLI `--dry-run`, `--fail-on-regression` | 11 |
-| GitHub Action usage | 12 (README) |
+| Spec requirement                                                                 | Task(s)                                                     |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Config schema `.tech-refactors.yml`, `--config` override                         | 2, 11                                                       |
+| Detection shapes: done+total, done+remaining, remaining+total, binary            | 4                                                           |
+| "Command must print a non-negative integer" enforcement                          | 4                                                           |
+| Env var expansion for reporter config (`$VAR`), never stored                     | 2                                                           |
+| Raw shell commands, language-agnostic                                            | 3                                                           |
+| Data model (`TaskResult`, `Report`, `Reporter`)                                  | 1, 7–10                                                     |
+| `stdout` / `json` / `markdown` reporters                                         | 7, 8, 9                                                     |
+| Custom reporters via JS/TS module                                                | 10                                                          |
+| Cache `.refactor-tracker-cache.json` (gitignored), delta computation             | 1, 5, 6                                                     |
+| `hasChanges` flag for reporter short-circuiting                                  | 6                                                           |
+| CLI `--dry-run`, `--fail-on-regression`                                          | 11                                                          |
+| GitHub Action usage                                                              | 12 (README)                                                 |
 | Package structure + extractability (zero workspace imports, config-driven paths) | 1–12 (all deps general-purpose; all paths come from config) |
 
 ## Deferred / Out of scope

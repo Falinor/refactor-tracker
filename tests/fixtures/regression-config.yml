@@ -3,6 +3,6 @@ refactors:
     name: Regressed task
     detect:
       done:
-        command: "echo 2"
+        command: 'echo 2'
       total:
-        command: "echo 5"
+        command: 'echo 5'

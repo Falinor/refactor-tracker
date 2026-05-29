@@ -14,6 +14,7 @@ Technical refactors are tracked manually in a Notion table (`Progression des tâ
 ## Goal
 
 A CLI tool that:
+
 1. Runs configurable detection commands against the codebase
 2. Counts progress for each tracked refactor
 3. Reports results to one or more configurable outputs (Notion, markdown, stdout, JSON, …)
@@ -80,7 +81,7 @@ refactors:
   - id: zzzz-wwww
     name: Upgrade somelib to v3
     detect:
-      command: "node -e \"process.exit(require('./package.json').dependencies.somelib.startsWith('3') ? 1 : 0)\""
+      command: 'node -e "process.exit(require(''./package.json'').dependencies.somelib.startsWith(''3'') ? 1 : 0)"'
       binary: true
       # total = 1, done = 0 or 1
 ```
@@ -89,12 +90,12 @@ refactors:
 
 Any two of `done`, `remaining`, `total` determine the third:
 
-| Fields provided | Computed |
-|---|---|
-| `done` + `total` | `remaining = total - done` |
-| `done` + `remaining` | `total = done + remaining` |
-| `remaining` + `total` | `done = total - remaining` |
-| `binary: true` | `total = 1`, `done = 0 or 1` (command exits 0 = done) |
+| Fields provided       | Computed                                              |
+| --------------------- | ----------------------------------------------------- |
+| `done` + `total`      | `remaining = total - done`                            |
+| `done` + `remaining`  | `total = done + remaining`                            |
+| `remaining` + `total` | `done = total - remaining`                            |
+| `binary: true`        | `total = 1`, `done = 0 or 1` (command exits 0 = done) |
 
 Each field is a shell command that **must print a non-negative integer to stdout**. The tool does not interpret the command — it only reads the output.
 
@@ -103,6 +104,7 @@ Env var references in reporter config (e.g. `$NOTION_TOKEN`) are expanded at run
 ### Why raw shell commands
 
 No custom DSL, no lock-in to a specific search tool. Users choose the right tool for their codebase:
+
 - Simple pattern counts → `grep`, `ripgrep`
 - AST-aware detection → `ast-grep`, `semgrep`
 - TypeScript type analysis → `ts-morph` script
@@ -120,13 +122,13 @@ interface TaskResult {
   name: string;
   done: number;
   total: number;
-  percentage: number;      // 0–100, rounded
-  delta: number | null;    // change in `done` vs previous run; null on first run
+  percentage: number; // 0–100, rounded
+  delta: number | null; // change in `done` vs previous run; null on first run
 }
 
 interface Report {
   tasks: TaskResult[];
-  timestamp: string;       // ISO-8601
+  timestamp: string; // ISO-8601
   hasChanges: boolean;
 }
 
@@ -141,12 +143,12 @@ interface Reporter {
 
 ### Built-in
 
-| Reporter | Output | Notes |
-|---|---|---|
-| `stdout` | Progress table to terminal | Default; always active if no reporters configured |
-| `json` | `Report` object to a file | `output: path` required |
-| `markdown` | Progress table to a `.md` file | `output: path` required |
-| `notion` | Updates `Réalisé` on each Notion page | Only fires when `hasChanges = true`; never touches `Objectif` |
+| Reporter   | Output                                | Notes                                                         |
+| ---------- | ------------------------------------- | ------------------------------------------------------------- |
+| `stdout`   | Progress table to terminal            | Default; always active if no reporters configured             |
+| `json`     | `Report` object to a file             | `output: path` required                                       |
+| `markdown` | Progress table to a `.md` file        | `output: path` required                                       |
+| `notion`   | Updates `Réalisé` on each Notion page | Only fires when `hasChanges = true`; never touches `Objectif` |
 
 The Notion reporter uses `id` as the Notion page ID and only updates `Réalisé`. `Objectif` remains under human control in Notion.
 
@@ -170,7 +172,7 @@ This is the extension point for integrations not shipped with the package (Slack
 ```json
 {
   "2559ec2a-...": { "done": 4, "total": 11, "timestamp": "2026-05-28T10:00:00Z" },
-  "xxxx-yyyy":    { "done": 7, "total": 9,  "timestamp": "2026-05-28T10:00:00Z" }
+  "xxxx-yyyy": { "done": 7, "total": 9, "timestamp": "2026-05-28T10:00:00Z" }
 }
 ```
 
@@ -227,6 +229,7 @@ packages/refactor-tracker/      # or root of extracted repo
 ```
 
 **Extractability constraints:**
+
 - Zero imports from other workspace packages
 - No assumptions about repo layout — all paths come from config
 - All dependencies are general-purpose: `zod`, `js-yaml`, `@notionhq/client`, `execa`

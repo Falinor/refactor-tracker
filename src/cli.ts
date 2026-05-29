@@ -40,7 +40,8 @@ export async function execute(options: ExecuteOptions): Promise<number> {
 export const main = defineCommand({
   meta: {
     name: 'refactor-tracker',
-    description: 'Run configurable shell detections to track and report technical-refactor progress.',
+    description:
+      'Run configurable shell detections to track and report technical-refactor progress.',
   },
   args: {
     config: {

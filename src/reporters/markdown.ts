@@ -4,12 +4,16 @@ import type { Reporter, Report } from '../types.js';
 
 export function formatMarkdown(report: Report): string {
   const header = '| Refactor | Done | Total | % |\n| --- | --- | --- | --- |';
-  const rows = report.tasks.map(
-    (t) => `| ${t.name} | ${t.done} | ${t.total} | ${t.percentage}% |`,
-  );
-  return ['# Refactor progress', '', `_Updated: ${report.timestamp}_`, '', header, ...rows, ''].join(
-    '\n',
-  );
+  const rows = report.tasks.map((t) => `| ${t.name} | ${t.done} | ${t.total} | ${t.percentage}% |`);
+  return [
+    '# Refactor progress',
+    '',
+    `_Updated: ${report.timestamp}_`,
+    '',
+    header,
+    ...rows,
+    '',
+  ].join('\n');
 }
 
 export class MarkdownReporter implements Reporter {

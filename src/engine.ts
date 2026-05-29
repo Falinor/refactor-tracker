@@ -8,8 +8,8 @@ export interface EngineOptions {
   cachePath: string;
   cwd?: string;
   dryRun?: boolean;
-  run?: CommandRunner;     // injectable for tests; defaults to the real shell runner
-  now?: () => Date;        // injectable for tests; defaults to wall clock
+  run?: CommandRunner; // injectable for tests; defaults to the real shell runner
+  now?: () => Date; // injectable for tests; defaults to wall clock
 }
 
 export async function runEngine(config: Config, options: EngineOptions): Promise<Report> {

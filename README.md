@@ -44,7 +44,7 @@ refactors:
   - id: upgrade-somelib
     name: Upgrade somelib to v3
     detect:
-      command: "node -e \"process.exit(require('./package.json').dependencies.somelib.startsWith('3') ? 0 : 1)\""
+      command: 'node -e "process.exit(require(''./package.json'').dependencies.somelib.startsWith(''3'') ? 0 : 1)"'
       binary: true
 ```
 
@@ -52,12 +52,12 @@ refactors:
 
 Provide any **two** of `done` / `remaining` / `total` and the third is computed:
 
-| Fields provided | Computed |
-|---|---|
-| `done` + `total` | `remaining = total − done` |
-| `done` + `remaining` | `total = done + remaining` |
-| `remaining` + `total` | `done = total − remaining` |
-| `binary: true` | `total = 1`, `done = 1` if the command **exits 0**, else `0` |
+| Fields provided       | Computed                                                     |
+| --------------------- | ------------------------------------------------------------ |
+| `done` + `total`      | `remaining = total − done`                                   |
+| `done` + `remaining`  | `total = done + remaining`                                   |
+| `remaining` + `total` | `done = total − remaining`                                   |
+| `binary: true`        | `total = 1`, `done = 1` if the command **exits 0**, else `0` |
 
 Each `command` must print a non-negative integer to stdout (binary commands signal via exit code instead).
 
@@ -86,12 +86,12 @@ refactor-tracker [options]
 
 ## Reporters
 
-| Reporter | Output |
-|---|---|
-| `stdout` | Progress table to the terminal (default when no reporters are configured) |
-| `json` | The full report object to a file (`output: <path>` required) |
-| `markdown` | A progress table to a `.md` file (`output: <path>` required) |
-| `custom` | Your own module (`path: <path>`) — the extension point for Slack, Linear, Notion, etc. |
+| Reporter   | Output                                                                                 |
+| ---------- | -------------------------------------------------------------------------------------- |
+| `stdout`   | Progress table to the terminal (default when no reporters are configured)              |
+| `json`     | The full report object to a file (`output: <path>` required)                           |
+| `markdown` | A progress table to a `.md` file (`output: <path>` required)                           |
+| `custom`   | Your own module (`path: <path>`) — the extension point for Slack, Linear, Notion, etc. |
 
 ### Custom reporters
 
