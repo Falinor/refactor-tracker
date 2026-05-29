@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.refactor-tracker-cache.json
+*.log
+.claude/settings.local.json
