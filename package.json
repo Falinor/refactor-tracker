@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Run configurable shell detections to track and report technical-refactor progress.",
   "bin": {
-    "refactor-tracker": "./dist/cli.js"
+    "refactor-tracker": "dist/cli.js"
   },
   "files": [
     "dist"
