@@ -108,6 +108,17 @@ describe('formatHtml', () => {
     expect(html).toContain('Drop legacy &lt;Modal&gt;');
     expect(html).not.toContain('Drop legacy <Modal>');
   });
+
+  it('html-escapes task names containing &', () => {
+    const ampReport: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: false,
+      tasks: [{ id: 'a', name: 'Foo & Bar', done: 1, total: 2, percentage: 50, delta: null }],
+    };
+    const html = formatHtml(ampReport);
+    expect(html).toContain('Foo &amp; Bar');
+    expect(html).not.toContain('Foo & Bar');
+  });
 });
 
 describe('HtmlReporter', () => {

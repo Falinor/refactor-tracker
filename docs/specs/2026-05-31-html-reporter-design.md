@@ -208,7 +208,7 @@ Inline CSS (sketch — exact values may be tuned during implementation):
 ## Docs / Packaging
 
 - `README.md` reporters table (around line 89) gets a fourth row: `` `html` | A self-contained HTML page with progress bars to a `.html` file (`output: <path>` required) ``.
-- `package.json` `dependencies`: add `eta` (latest 3.x).
+- `package.json` `dependencies`: add `eta` (current major).
 - No `tsdown` config changes — template is inlined.
 - No change to `src/index.ts`; the existing `Reporter` / `Report` / `TaskResult` re-exports still cover custom-reporter consumers.
 
