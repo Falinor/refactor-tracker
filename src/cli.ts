@@ -10,6 +10,7 @@ export interface ExecuteOptions {
   config: string;
   dryRun: boolean;
   failOnRegression: boolean;
+  tags?: string[];
 }
 
 export async function execute(options: ExecuteOptions): Promise<number> {
@@ -17,11 +18,18 @@ export async function execute(options: ExecuteOptions): Promise<number> {
   const baseDir = path.dirname(configPath);
   const config = await loadConfig(configPath);
 
-  const report = await runEngine(config, {
-    cachePath: path.join(baseDir, '.refactor-tracker-cache.json'),
-    cwd: baseDir,
-    dryRun: options.dryRun,
-  });
+  let report;
+  try {
+    report = await runEngine(config, {
+      cachePath: path.join(baseDir, '.refactor-tracker-cache.json'),
+      cwd: baseDir,
+      dryRun: options.dryRun,
+      tagFilter: options.tags,
+    });
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
+    return 1;
+  }
 
   if (options.dryRun) {
     console.log(JSON.stringify(report, null, 2));
@@ -35,6 +43,23 @@ export async function execute(options: ExecuteOptions): Promise<number> {
     return 1;
   }
   return 0;
+}
+
+function collectTagFlags(rawArgs: string[]): string[] {
+  const tags: string[] = [];
+  for (let i = 0; i < rawArgs.length; i++) {
+    const a = rawArgs[i];
+    if (a === '--tag') {
+      const next = rawArgs[i + 1];
+      if (next !== undefined && !next.startsWith('-')) {
+        tags.push(next);
+        i++;
+      }
+    } else if (a.startsWith('--tag=')) {
+      tags.push(a.slice('--tag='.length));
+    }
+  }
+  return tags;
 }
 
 export const main = defineCommand({
@@ -60,12 +85,19 @@ export const main = defineCommand({
       description: "Exit 1 if any task's done count decreased vs the cache",
       default: false,
     },
+    tag: {
+      type: 'string',
+      description: 'Filter refactors by tag (repeatable, OR semantics: --tag a --tag b)',
+      valueHint: 'name',
+    },
   },
-  async run({ args }) {
+  async run({ args, rawArgs }) {
+    const tags = collectTagFlags(rawArgs);
     const code = await execute({
       config: args.config,
       dryRun: args['dry-run'],
       failOnRegression: args['fail-on-regression'],
+      tags: tags.length > 0 ? tags : undefined,
     });
     if (code !== 0) process.exitCode = code;
     return code;
