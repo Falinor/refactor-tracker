@@ -84,6 +84,66 @@ describe('MarkdownReporter', () => {
   });
 });
 
+describe('formatMarkdown with items', () => {
+  it('renders a <details> block per task that has items', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'Lazy routes',
+          done: 1,
+          total: 3,
+          percentage: 33,
+          delta: null,
+          items: ['src/foo.ts', 'src/bar.ts'],
+        },
+      ],
+    };
+    const md = formatMarkdown(r);
+    expect(md).toContain('<details>');
+    expect(md).toContain('<summary>Lazy routes — 2 remaining</summary>');
+    expect(md).toContain('- src/foo.ts');
+    expect(md).toContain('- src/bar.ts');
+    expect(md).toContain('</details>');
+  });
+
+  it('does not render any <details> when no task has items', () => {
+    const md = formatMarkdown(report);
+    expect(md).not.toContain('<details>');
+  });
+
+  it('attaches <details> to the same tag group as the table', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'FE',
+          tags: ['frontend'],
+          done: 0,
+          total: 2,
+          percentage: 0,
+          delta: null,
+          items: ['src/a.ts'],
+        },
+        { id: 'b', name: 'BE', tags: ['backend'], done: 0, total: 2, percentage: 0, delta: null },
+      ],
+    };
+    const md = formatMarkdown(r);
+    const fe = md.indexOf('## frontend');
+    const be = md.indexOf('## backend');
+    const details = md.indexOf('<details>');
+    expect(fe).toBeGreaterThanOrEqual(0);
+    expect(be).toBeGreaterThan(fe);
+    // <details> for the FE task appears between the frontend heading and the backend heading.
+    expect(details).toBeGreaterThan(fe);
+    expect(details).toBeLessThan(be);
+  });
+});
+
 describe('formatMarkdown grouped by tag', () => {
   it('emits a heading and table per tag when any task has tags', () => {
     const r: Report = {

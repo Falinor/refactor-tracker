@@ -23,17 +23,34 @@ function renderTable(tasks: TaskResult[]): string[] {
   return [headerLine, separator, ...rows];
 }
 
+function renderItems(tasks: TaskResult[]): string[] {
+  const lines: string[] = [];
+  for (const t of tasks) {
+    if (!t.items || t.items.length === 0) continue;
+    lines.push(
+      '<details>',
+      `<summary>${t.name} — ${t.items.length} remaining</summary>`,
+      '',
+      ...t.items.map((item) => `- ${item}`),
+      '',
+      '</details>',
+      '',
+    );
+  }
+  return lines;
+}
+
 export function formatMarkdown(report: Report): string {
   const groups = groupTasksByTag(report.tasks);
   const flat = groups.length === 1 && groups[0].tag === null;
 
   const body: string[] = [];
   if (flat) {
-    body.push(...renderTable(groups[0].tasks), '');
+    body.push(...renderTable(groups[0].tasks), '', ...renderItems(groups[0].tasks));
   } else {
     for (const g of groups) {
       const heading = g.tag === null ? 'Untagged' : g.tag;
-      body.push(`## ${heading}`, '', ...renderTable(g.tasks), '');
+      body.push(`## ${heading}`, '', ...renderTable(g.tasks), '', ...renderItems(g.tasks));
     }
   }
 
