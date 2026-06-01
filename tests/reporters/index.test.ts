@@ -33,6 +33,22 @@ describe('createReporters', () => {
     expect(reporters[3]).toBeInstanceOf(HtmlReporter);
   });
 
+  it('resolves relative reporter outputs against baseDir, leaving absolute paths intact', async () => {
+    const baseDir = path.resolve('/refactor-tracker-base');
+    const absoluteOut = path.resolve('/tmp/refactor-tracker-absolute.json');
+    const reporters = await createReporters(
+      [
+        { type: 'json', output: 'out.json' },
+        { type: 'markdown', output: 'docs/out.md' },
+        { type: 'html', output: absoluteOut },
+      ],
+      baseDir,
+    );
+    expect((reporters[0] as JsonReporter).output).toBe(path.join(baseDir, 'out.json'));
+    expect((reporters[1] as MarkdownReporter).output).toBe(path.join(baseDir, 'docs/out.md'));
+    expect((reporters[2] as HtmlReporter).output).toBe(absoluteOut);
+  });
+
   it('loads a custom reporter from a module path relative to baseDir', async () => {
     const reporters = await createReporters(
       [{ type: 'custom', path: './custom-reporter.ts' }],

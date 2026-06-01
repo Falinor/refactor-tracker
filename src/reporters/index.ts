@@ -13,6 +13,7 @@ export async function createReporters(
 ): Promise<Reporter[]> {
   if (!configs || configs.length === 0) return [new StdoutReporter()];
 
+  const resolveOutput = (output: string): string => path.resolve(baseDir, output);
   const reporters: Reporter[] = [];
   for (const config of configs) {
     switch (config.type) {
@@ -20,13 +21,13 @@ export async function createReporters(
         reporters.push(new StdoutReporter());
         break;
       case 'json':
-        reporters.push(new JsonReporter(config.output as string));
+        reporters.push(new JsonReporter(resolveOutput(config.output as string)));
         break;
       case 'markdown':
-        reporters.push(new MarkdownReporter(config.output as string));
+        reporters.push(new MarkdownReporter(resolveOutput(config.output as string)));
         break;
       case 'html':
-        reporters.push(new HtmlReporter(config.output as string));
+        reporters.push(new HtmlReporter(resolveOutput(config.output as string)));
         break;
       case 'custom': {
         const resolved = path.resolve(baseDir, config.path as string);

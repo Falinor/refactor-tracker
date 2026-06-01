@@ -149,7 +149,7 @@ export function formatHtml(report: Report): string {
 }
 
 export class HtmlReporter implements Reporter {
-  constructor(private readonly output: string) {}
+  constructor(readonly output: string) {}
 
   async report(report: Report): Promise<void> {
     await mkdir(path.dirname(this.output), { recursive: true });

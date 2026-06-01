@@ -64,6 +64,8 @@ Each `command` must print a non-negative integer to stdout (binary commands sign
 
 An optional `description` field gives a one-line context blurb. It flows through to the JSON output, renders as a subtitle in the HTML reporter, and adds a `Description` column to the markdown reporter (the column is omitted entirely when no refactor has one). The stdout reporter ignores it.
 
+Reporter `output` paths are resolved against the config file's directory, so relative paths Just Work regardless of where the CLI is invoked from. Absolute paths are used as-is.
+
 Reporter config values that are exactly `$VAR` (e.g. `token: $MY_TOKEN`) are expanded from the environment at runtime and never stored. A missing variable is a hard error.
 
 ## CLI
