@@ -64,6 +64,25 @@ Each `command` must print a non-negative integer to stdout (binary commands sign
 
 An optional `description` field gives a one-line context blurb. It flows through to the JSON output, renders as a subtitle in the HTML reporter, and adds a `Description` column to the markdown reporter (the column is omitted entirely when no refactor has one). The stdout reporter ignores it.
 
+#### Listing remaining items
+
+Optionally attach a `list` command alongside the counts to surface the actual items left to migrate (file paths, symbols, …) — one per line on stdout:
+
+```yaml
+refactors:
+  - id: lazy-routes
+    name: Lazy-load top-level routes
+    detect:
+      done: { command: "grep -rl 'React.lazy' frontend/src/views | wc -l" }
+      total: { command: 'ls frontend/src/views | wc -l' }
+      list:
+        {
+          command: "comm -23 <(ls frontend/src/views | sort) <(grep -rl 'React.lazy' frontend/src/views | xargs -n1 basename | sort)",
+        }
+```
+
+The list command only runs when `remaining > 0`. Markdown and HTML reporters render the items in a collapsible `<details>` block per refactor; the JSON reporter serializes them as `items: string[]`; the stdout reporter ignores them. The list is not allowed with `binary: true`.
+
 Reporter `output` paths are resolved against the config file's directory, so relative paths Just Work regardless of where the CLI is invoked from. Absolute paths are used as-is.
 
 Reporter config values that are exactly `$VAR` (e.g. `token: $MY_TOKEN`) are expanded from the environment at runtime and never stored. A missing variable is a hard error.
@@ -153,4 +172,4 @@ Each run compares current counts against `.refactor-tracker-cache.json` (gitigno
 
 ## Roadmap
 
-- **List remaining cases per refactor** — surface the actual items left to migrate (file paths, symbols, …), not just the count, so you can see what's left without re-running ad-hoc greps. Likely shape: an optional `list` command alongside `done`/`remaining`/`total` that prints one case per line; reporters render it as a collapsible section.
+_No items currently on the roadmap._
