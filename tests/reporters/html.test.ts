@@ -98,4 +98,11 @@ describe('formatHtml', () => {
     expect(html).toContain('0 / 0');
     expect(html).toMatch(/<section class="summary">[\s\S]*?0%/);
   });
+
+  it('html-escapes task names containing < and >', () => {
+    const html = formatHtml(report);
+    // "Drop legacy <Modal>" must be escaped — never appear raw
+    expect(html).toContain('Drop legacy &lt;Modal&gt;');
+    expect(html).not.toContain('Drop legacy <Modal>');
+  });
 });
