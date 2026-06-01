@@ -186,6 +186,57 @@ describe('formatHtml', () => {
   });
 });
 
+describe('formatHtml with items', () => {
+  it('renders a <details class="items"> per refactor card that has items', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'Lazy routes',
+          done: 1,
+          total: 3,
+          percentage: 33,
+          delta: null,
+          items: ['src/foo.ts', 'src/bar.ts'],
+        },
+      ],
+    };
+    const html = formatHtml(r);
+    expect(html).toContain('<details class="items">');
+    expect(html).toContain('<summary>2 remaining</summary>');
+    expect(html).toContain('<li>src/foo.ts</li>');
+    expect(html).toContain('<li>src/bar.ts</li>');
+  });
+
+  it('does not render any <details class="items"> when no task has items', () => {
+    const html = formatHtml(report);
+    expect(html).not.toContain('details class="items"');
+  });
+
+  it('HTML-escapes item content', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'Foo',
+          done: 0,
+          total: 1,
+          percentage: 0,
+          delta: null,
+          items: ['<Component />'],
+        },
+      ],
+    };
+    const html = formatHtml(r);
+    expect(html).toContain('&lt;Component /&gt;');
+    expect(html).not.toContain('<li><Component />');
+  });
+});
+
 describe('formatHtml grouped by tag', () => {
   it('renders one <section class="tag-group"> with <h2> per tag', () => {
     const r: Report = {

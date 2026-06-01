@@ -29,6 +29,9 @@ const TEMPLATE = `<!DOCTYPE html>
     .delta { padding: 0 0.5rem; border-radius: 999px; font-size: 0.85em; font-variant-numeric: tabular-nums; }
     .delta-up { background: #d4f4dd; color: #0a5028; }
     .delta-down { background: #f8d7da; color: #842029; }
+    details.items { margin-top: 0.75rem; }
+    details.items > summary { cursor: pointer; color: #444; font-size: 0.9em; }
+    details.items > ul { margin: 0.5rem 0 0; padding-left: 1.25rem; color: #444; font-size: 0.9em; }
     <% if (!it.flat) { %>.tag-group { margin-top: 1.5rem; }<% } %>
   </style>
 </head>
@@ -70,6 +73,16 @@ const TEMPLATE = `<!DOCTYPE html>
           <div class="bar-fill"
                style="width: <%= task.percentage %>%; background: <%= task.barColor %>"></div>
         </div>
+        <% if (task.items) { %>
+        <details class="items">
+          <summary><%= task.items.length %> remaining</summary>
+          <ul>
+            <% task.items.forEach(function (item) { %>
+            <li><%= item %></li>
+            <% }) %>
+          </ul>
+        </details>
+        <% } %>
       </li>
       <% }) %>
     </ul>
@@ -132,6 +145,7 @@ interface HtmlTaskView {
   percentage: number;
   barColor: string;
   delta: HtmlDeltaView | null;
+  items: string[] | null;
 }
 
 interface HtmlGroupView {
@@ -168,6 +182,7 @@ function toTaskView(t: Report['tasks'][number]): HtmlTaskView {
     percentage: t.percentage,
     barColor: barColor(t.percentage),
     delta: buildDelta(t.delta),
+    items: t.items && t.items.length > 0 ? t.items : null,
   };
 }
 
