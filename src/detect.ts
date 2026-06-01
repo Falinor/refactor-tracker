@@ -49,3 +49,18 @@ export async function resolveDetection(
   }
   throw new Error('detect must provide binary, or any two of done/remaining/total');
 }
+
+export async function resolveList(
+  detect: DetectConfig,
+  run: CommandRunner,
+  cwd?: string,
+): Promise<string[] | undefined> {
+  if ('binary' in detect) return undefined;
+  if (!detect.list) return undefined;
+  const { stdout } = await run(detect.list.command, cwd);
+  const items = stdout
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  return items.length > 0 ? items : undefined;
+}

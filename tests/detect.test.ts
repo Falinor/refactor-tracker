@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveDetection, type CommandRunner } from '../src/detect.js';
+import { resolveDetection, resolveList, type CommandRunner } from '../src/detect.js';
 
 // Fake runner: maps a command string to a canned result.
 function fakeRunner(map: Record<string, { stdout?: string; exitCode?: number }>): CommandRunner {
@@ -54,5 +54,50 @@ describe('resolveDetection', () => {
     await expect(
       resolveDetection({ done: { command: 'd' }, total: { command: 't' } } as any, run),
     ).rejects.toThrow(/non-negative integer/);
+  });
+});
+
+describe('resolveList', () => {
+  it('returns undefined when detect has no list field', async () => {
+    const run = fakeRunner({});
+    const items = await resolveList(
+      { done: { command: 'd' }, total: { command: 't' } } as any,
+      run,
+    );
+    expect(items).toBeUndefined();
+  });
+
+  it('returns undefined for binary detection', async () => {
+    const run = fakeRunner({});
+    const items = await resolveList({ command: 'check', binary: true } as any, run);
+    expect(items).toBeUndefined();
+  });
+
+  it('parses lines, trims, drops empty lines', async () => {
+    const run = fakeRunner({
+      ls: { stdout: '  src/foo.ts  \n\nsrc/bar.ts\n   \nsrc/baz.ts\n' },
+    });
+    const items = await resolveList(
+      {
+        done: { command: 'd' },
+        total: { command: 't' },
+        list: { command: 'ls' },
+      } as any,
+      run,
+    );
+    expect(items).toEqual(['src/foo.ts', 'src/bar.ts', 'src/baz.ts']);
+  });
+
+  it('returns undefined when the list command produces no items', async () => {
+    const run = fakeRunner({ ls: { stdout: '\n  \n' } });
+    const items = await resolveList(
+      {
+        done: { command: 'd' },
+        total: { command: 't' },
+        list: { command: 'ls' },
+      } as any,
+      run,
+    );
+    expect(items).toBeUndefined();
   });
 });
