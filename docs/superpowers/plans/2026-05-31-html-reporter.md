@@ -14,36 +14,41 @@
 
 ## Files Map
 
-| File | Role | Action |
-|---|---|---|
-| `package.json` | Add `eta` to `dependencies` | Modify |
-| `src/reporters/html.ts` | `formatHtml`, `HtmlReporter`, inline template, compiled render | Create |
-| `src/reporters/index.ts` | Add `case 'html':` arm | Modify |
-| `tests/reporters/html.test.ts` | Unit + integration tests | Create |
-| `tests/reporters/index.test.ts` | Assert `html` config builds `HtmlReporter` | Modify |
-| `README.md` | Add `html` row to reporters table | Modify |
+| File                            | Role                                                           | Action |
+| ------------------------------- | -------------------------------------------------------------- | ------ |
+| `package.json`                  | Add `eta` to `dependencies`                                    | Modify |
+| `src/reporters/html.ts`         | `formatHtml`, `HtmlReporter`, inline template, compiled render | Create |
+| `src/reporters/index.ts`        | Add `case 'html':` arm                                         | Modify |
+| `tests/reporters/html.test.ts`  | Unit + integration tests                                       | Create |
+| `tests/reporters/index.test.ts` | Assert `html` config builds `HtmlReporter`                     | Modify |
+| `README.md`                     | Add `html` row to reporters table                              | Modify |
 
 ---
 
 ### Task 1: Add `eta` dependency
 
 **Files:**
+
 - Modify: `package.json` (dependencies), `pnpm-lock.yaml`
 
 - [ ] **Step 1: Install eta**
 
 Run:
+
 ```bash
 pnpm add eta
 ```
+
 Expected: `package.json` gains `"eta": "^3.x"` (or current major) under `dependencies`; `pnpm-lock.yaml` updates.
 
 - [ ] **Step 2: Verify type-check passes**
 
 Run:
+
 ```bash
 pnpm exec tsc --noEmit
 ```
+
 Expected: exit 0, no errors.
 
 - [ ] **Step 3: Commit**
@@ -60,6 +65,7 @@ git commit -m "feat(html-reporter): add eta template engine dependency"
 Lay down `html.ts` with the inline template, compiled render function, view-model interfaces, and a stubbed `HtmlReporter.report` (real I/O comes in Task 8). The initial template renders only the DOCTYPE, title, and timestamp — per-task content and the summary come in later tasks.
 
 **Files:**
+
 - Create: `src/reporters/html.ts`
 - Create: `tests/reporters/html.test.ts`
 
@@ -95,9 +101,11 @@ describe('formatHtml', () => {
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: FAIL with module-not-found for `../../src/reporters/html.js`.
 
 - [ ] **Step 3: Create `src/reporters/html.ts`**
@@ -159,17 +167,21 @@ The `_report` underscore prefix marks the stub parameter as intentionally unused
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: PASS — 1 test.
 
 - [ ] **Step 5: Type-check and lint**
 
 Run:
+
 ```bash
 pnpm exec tsc --noEmit && pnpm lint
 ```
+
 Expected: exit 0.
 
 - [ ] **Step 6: Commit**
@@ -186,6 +198,7 @@ git commit -m "feat(html-reporter): scaffold formatHtml and HtmlReporter shell"
 Add `<ul class="refactors">` with one `<li class="refactor">` per task. Each card shows name, `done / total`, percentage, and a progress bar whose fill width matches the percentage. Bars stay neutral here; color comes in Task 5, delta chip in Task 4.
 
 **Files:**
+
 - Modify: `src/reporters/html.ts`
 - Modify: `tests/reporters/html.test.ts`
 
@@ -194,30 +207,32 @@ Add `<ul class="refactors">` with one `<li class="refactor">` per task. Each car
 Append to the `describe('formatHtml', ...)` block in `tests/reporters/html.test.ts`:
 
 ```ts
-  it('renders one .refactor card per task with name, counts, and percentage', () => {
-    const html = formatHtml(report);
-    const cards = html.match(/<li class="refactor">/g) ?? [];
-    expect(cards).toHaveLength(2);
-    expect(html).toContain('Lazy routes');
-    expect(html).toContain('4 / 11');
-    expect(html).toContain('36%');
-    expect(html).toContain('0 / 5');
-    expect(html).toContain('0%');
-  });
+it('renders one .refactor card per task with name, counts, and percentage', () => {
+  const html = formatHtml(report);
+  const cards = html.match(/<li class="refactor">/g) ?? [];
+  expect(cards).toHaveLength(2);
+  expect(html).toContain('Lazy routes');
+  expect(html).toContain('4 / 11');
+  expect(html).toContain('36%');
+  expect(html).toContain('0 / 5');
+  expect(html).toContain('0%');
+});
 
-  it('renders a progress bar whose fill width matches the percentage', () => {
-    const html = formatHtml(report);
-    expect(html).toContain('width: 36%');
-    expect(html).toContain('width: 0%');
-  });
+it('renders a progress bar whose fill width matches the percentage', () => {
+  const html = formatHtml(report);
+  expect(html).toContain('width: 36%');
+  expect(html).toContain('width: 0%');
+});
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: 2 NEW failures; existing test still passes.
 
 - [ ] **Step 3: Extend view model and template**
@@ -302,9 +317,11 @@ const TEMPLATE = `<!DOCTYPE html>
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: PASS — 3 tests.
 
 - [ ] **Step 5: Commit**
@@ -321,6 +338,7 @@ git commit -m "feat(html-reporter): render per-refactor cards with progress bars
 The chip shows `+N` (green, class `delta-up`) for positive delta, `−N` (red, class `delta-down`, U+2212 minus) for negative, and is omitted for `null` (first run) and `0` (unchanged — keeps the page quiet).
 
 **Files:**
+
 - Modify: `src/reporters/html.ts`
 - Modify: `tests/reporters/html.test.ts`
 
@@ -329,45 +347,47 @@ The chip shows `+N` (green, class `delta-up`) for positive delta, `−N` (red, c
 Append to the `describe('formatHtml', ...)` block:
 
 ```ts
-  it('renders a green delta chip for positive delta', () => {
-    const html = formatHtml(report);
-    expect(html).toContain('<span class="delta delta-up">+3</span>');
-  });
+it('renders a green delta chip for positive delta', () => {
+  const html = formatHtml(report);
+  expect(html).toContain('<span class="delta delta-up">+3</span>');
+});
 
-  it('omits the delta chip when delta is null (first run)', () => {
-    const html = formatHtml(report);
-    // Second card belongs to "Drop legacy <Modal>" with delta: null.
-    const modalCard = html.match(/<li class="refactor">[\s\S]*?Drop legacy[\s\S]*?<\/li>/)?.[0] ?? '';
-    expect(modalCard).not.toContain('class="delta');
-  });
+it('omits the delta chip when delta is null (first run)', () => {
+  const html = formatHtml(report);
+  // Second card belongs to "Drop legacy <Modal>" with delta: null.
+  const modalCard = html.match(/<li class="refactor">[\s\S]*?Drop legacy[\s\S]*?<\/li>/)?.[0] ?? '';
+  expect(modalCard).not.toContain('class="delta');
+});
 
-  it('omits the delta chip when delta is 0', () => {
-    const zeroReport: Report = {
-      timestamp: '2026-05-28T12:00:00.000Z',
-      hasChanges: false,
-      tasks: [{ id: 'a', name: 'Stable', done: 4, total: 10, percentage: 40, delta: 0 }],
-    };
-    const html = formatHtml(zeroReport);
-    expect(html).not.toContain('class="delta');
-  });
+it('omits the delta chip when delta is 0', () => {
+  const zeroReport: Report = {
+    timestamp: '2026-05-28T12:00:00.000Z',
+    hasChanges: false,
+    tasks: [{ id: 'a', name: 'Stable', done: 4, total: 10, percentage: 40, delta: 0 }],
+  };
+  const html = formatHtml(zeroReport);
+  expect(html).not.toContain('class="delta');
+});
 
-  it('renders a red delta chip with U+2212 minus for negative delta', () => {
-    const regressionReport: Report = {
-      timestamp: '2026-05-28T12:00:00.000Z',
-      hasChanges: true,
-      tasks: [{ id: 'a', name: 'Backslid', done: 3, total: 10, percentage: 30, delta: -2 }],
-    };
-    const html = formatHtml(regressionReport);
-    expect(html).toContain('<span class="delta delta-down">−2</span>');
-  });
+it('renders a red delta chip with U+2212 minus for negative delta', () => {
+  const regressionReport: Report = {
+    timestamp: '2026-05-28T12:00:00.000Z',
+    hasChanges: true,
+    tasks: [{ id: 'a', name: 'Backslid', done: 3, total: 10, percentage: 30, delta: -2 }],
+  };
+  const html = formatHtml(regressionReport);
+  expect(html).toContain('<span class="delta delta-down">−2</span>');
+});
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: 4 NEW failures.
 
 - [ ] **Step 3: Add delta to the view model**
@@ -416,30 +436,43 @@ Update the task mapping inside `buildView`:
 In `TEMPLATE`, replace the `<div class="head">…</div>` block inside `<li class="refactor">` with:
 
 ```html
-        <div class="head">
-          <span class="name"><%= task.name %></span>
-          <span class="counts"><%= task.done %> / <%= task.total %></span>
-          <span class="pct"><%= task.percentage %>%</span>
-          <% if (task.delta) { %>
-          <span class="delta delta-<%= task.delta.kind %>"><%= task.delta.text %></span>
-          <% } %>
-        </div>
+<div class="head">
+  <span class="name"><%= task.name %></span>
+  <span class="counts"><%= task.done %> / <%= task.total %></span>
+  <span class="pct"><%= task.percentage %>%</span>
+  <% if (task.delta) { %>
+  <span class="delta delta-<%= task.delta.kind %>"><%= task.delta.text %></span>
+  <% } %>
+</div>
 ```
 
 Add chip CSS inside the `<style>` block (after the existing `.bar-fill` rule):
 
 ```css
-    .delta { padding: 0 0.5rem; border-radius: 999px; font-size: 0.85em; font-variant-numeric: tabular-nums; }
-    .delta-up { background: #d4f4dd; color: #0a5028; }
-    .delta-down { background: #f8d7da; color: #842029; }
+.delta {
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+}
+.delta-up {
+  background: #d4f4dd;
+  color: #0a5028;
+}
+.delta-down {
+  background: #f8d7da;
+  color: #842029;
+}
 ```
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: PASS — 7 tests.
 
 - [ ] **Step 6: Commit**
@@ -456,6 +489,7 @@ git commit -m "feat(html-reporter): add delta chip with up/down/none states"
 Bar `background` uses `hsl(${Math.round(percentage * 1.2)}, 65%, 45%)`. 0% → hue 0 (red), 50% → hue 60 (yellow), 100% → hue 120 (green).
 
 **Files:**
+
 - Modify: `src/reporters/html.ts`
 - Modify: `tests/reporters/html.test.ts`
 
@@ -464,21 +498,23 @@ Bar `background` uses `hsl(${Math.round(percentage * 1.2)}, 65%, 45%)`. 0% → h
 Append to the `describe('formatHtml', ...)` block:
 
 ```ts
-  it('colors each progress bar by completion using hsl', () => {
-    const html = formatHtml(report);
-    // 36% → hue round(36 * 1.2) = 43
-    expect(html).toContain('background: hsl(43, 65%, 45%)');
-    // 0% → hue 0 (red)
-    expect(html).toContain('background: hsl(0, 65%, 45%)');
-  });
+it('colors each progress bar by completion using hsl', () => {
+  const html = formatHtml(report);
+  // 36% → hue round(36 * 1.2) = 43
+  expect(html).toContain('background: hsl(43, 65%, 45%)');
+  // 0% → hue 0 (red)
+  expect(html).toContain('background: hsl(0, 65%, 45%)');
+});
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: 1 NEW failure (no `background: hsl(...)` in output).
 
 - [ ] **Step 3: Add the helper and extend the view model**
@@ -522,24 +558,30 @@ Update the task mapping inside `buildView`:
 In `TEMPLATE`, replace the `<div class="bar">…</div>` block inside `<li class="refactor">` with:
 
 ```html
-        <div class="bar">
-          <div class="bar-fill"
-               style="width: <%= task.percentage %>%; background: <%= task.barColor %>"></div>
-        </div>
+<div class="bar">
+  <div
+    class="bar-fill"
+    style="width: <%= task.percentage %>%; background: <%= task.barColor %>"
+  ></div>
+</div>
 ```
 
 In the `<style>` block, remove `background: #333;` from the `.bar-fill` rule (the inline style now provides the color):
 
 ```css
-    .bar-fill { height: 100%; }
+.bar-fill {
+  height: 100%;
+}
 ```
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: PASS — 8 tests.
 
 - [ ] **Step 6: Commit**
@@ -556,6 +598,7 @@ git commit -m "feat(html-reporter): color bars by completion percentage"
 A headline card above the refactor list with combined `done / total`, overall percentage, and an aggregate bar (also colored by overall percentage).
 
 **Files:**
+
 - Modify: `src/reporters/html.ts`
 - Modify: `tests/reporters/html.test.ts`
 
@@ -564,34 +607,36 @@ A headline card above the refactor list with combined `done / total`, overall pe
 Append to the `describe('formatHtml', ...)` block:
 
 ```ts
-  it('renders an overall summary with grand totals and aggregate percentage', () => {
-    const html = formatHtml(report);
-    // grandDone = 4 + 0 = 4; grandTotal = 11 + 5 = 16; round(4/16*100) = 25
-    expect(html).toContain('<section class="summary">');
-    expect(html).toContain('4 / 16');
-    expect(html).toContain('25%');
-    // 25% → hue round(25 * 1.2) = 30
-    expect(html).toContain('background: hsl(30, 65%, 45%)');
-  });
+it('renders an overall summary with grand totals and aggregate percentage', () => {
+  const html = formatHtml(report);
+  // grandDone = 4 + 0 = 4; grandTotal = 11 + 5 = 16; round(4/16*100) = 25
+  expect(html).toContain('<section class="summary">');
+  expect(html).toContain('4 / 16');
+  expect(html).toContain('25%');
+  // 25% → hue round(25 * 1.2) = 30
+  expect(html).toContain('background: hsl(30, 65%, 45%)');
+});
 
-  it('treats overall percentage as 0 when grandTotal is 0', () => {
-    const emptyReport: Report = {
-      timestamp: '2026-05-28T12:00:00.000Z',
-      hasChanges: false,
-      tasks: [{ id: 'a', name: 'Empty', done: 0, total: 0, percentage: 0, delta: null }],
-    };
-    const html = formatHtml(emptyReport);
-    expect(html).toContain('0 / 0');
-    expect(html).toMatch(/<section class="summary">[\s\S]*?0%/);
-  });
+it('treats overall percentage as 0 when grandTotal is 0', () => {
+  const emptyReport: Report = {
+    timestamp: '2026-05-28T12:00:00.000Z',
+    hasChanges: false,
+    tasks: [{ id: 'a', name: 'Empty', done: 0, total: 0, percentage: 0, delta: null }],
+  };
+  const html = formatHtml(emptyReport);
+  expect(html).toContain('0 / 0');
+  expect(html).toMatch(/<section class="summary">[\s\S]*?0%/);
+});
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: 2 NEW failures.
 
 - [ ] **Step 3: Extend the view model**
@@ -615,8 +660,7 @@ Replace `buildView` with:
 function buildView(report: Report): HtmlView {
   const grandDone = report.tasks.reduce((sum, t) => sum + t.done, 0);
   const grandTotal = report.tasks.reduce((sum, t) => sum + t.total, 0);
-  const overallPercentage =
-    grandTotal === 0 ? 0 : Math.round((grandDone / grandTotal) * 100);
+  const overallPercentage = grandTotal === 0 ? 0 : Math.round((grandDone / grandTotal) * 100);
   return {
     timestamp: report.timestamp,
     grandDone,
@@ -640,32 +684,45 @@ function buildView(report: Report): HtmlView {
 In `TEMPLATE`, insert the summary block between the closing `</header>` and the opening `<ul class="refactors">`:
 
 ```html
-    <section class="summary">
-      <div class="head">
-        <span class="name">Overall</span>
-        <span class="counts"><%= it.grandDone %> / <%= it.grandTotal %></span>
-        <span class="pct"><%= it.overallPercentage %>%</span>
-      </div>
-      <div class="bar">
-        <div class="bar-fill"
-             style="width: <%= it.overallPercentage %>%; background: <%= it.overallBarColor %>"></div>
-      </div>
-    </section>
+<section class="summary">
+  <div class="head">
+    <span class="name">Overall</span>
+    <span class="counts"><%= it.grandDone %> / <%= it.grandTotal %></span>
+    <span class="pct"><%= it.overallPercentage %>%</span>
+  </div>
+  <div class="bar">
+    <div
+      class="bar-fill"
+      style="width: <%= it.overallPercentage %>%; background: <%= it.overallBarColor %>"
+    ></div>
+  </div>
+</section>
 ```
 
 Add CSS for the summary in the `<style>` block (placed alongside `.refactor`):
 
 ```css
-    .summary { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin: 1rem 0; background: #fafafa; }
-    .summary .name { font-weight: 700; font-size: 1.05em; }
+.summary {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: #fafafa;
+}
+.summary .name {
+  font-weight: 700;
+  font-size: 1.05em;
+}
 ```
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: PASS — 10 tests.
 
 - [ ] **Step 6: Commit**
@@ -682,6 +739,7 @@ git commit -m "feat(html-reporter): add overall summary section with aggregate b
 Eta auto-escapes `<%= %>` interpolations by default. The sample report's `Drop legacy <Modal>` task makes that escaping visible. This task is a guard test — it should pass without code changes; if it fails, the eta config has regressed.
 
 **Files:**
+
 - Modify: `tests/reporters/html.test.ts`
 
 - [ ] **Step 1: Write the test**
@@ -689,20 +747,22 @@ Eta auto-escapes `<%= %>` interpolations by default. The sample report's `Drop l
 Append to the `describe('formatHtml', ...)` block:
 
 ```ts
-  it('html-escapes task names containing < and >', () => {
-    const html = formatHtml(report);
-    // "Drop legacy <Modal>" must be escaped — never appear raw
-    expect(html).toContain('Drop legacy &lt;Modal&gt;');
-    expect(html).not.toContain('Drop legacy <Modal>');
-  });
+it('html-escapes task names containing < and >', () => {
+  const html = formatHtml(report);
+  // "Drop legacy <Modal>" must be escaped — never appear raw
+  expect(html).toContain('Drop legacy &lt;Modal&gt;');
+  expect(html).not.toContain('Drop legacy <Modal>');
+});
 ```
 
 - [ ] **Step 2: Run the test**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: PASS — 11 tests. If this FAILS, the eta config is wrong: verify `new Eta({ autoEscape: true, useWith: false })` in `src/reporters/html.ts` and re-run.
 
 - [ ] **Step 3: Commit**
@@ -719,6 +779,7 @@ git commit -m "test(html-reporter): assert task names are html-escaped"
 Mirrors `MarkdownReporter` exactly (see `src/reporters/markdown.ts:19`): `mkdir -p` parents, then `writeFile`.
 
 **Files:**
+
 - Modify: `src/reporters/html.ts`
 - Modify: `tests/reporters/html.test.ts`
 
@@ -755,9 +816,11 @@ describe('HtmlReporter', () => {
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: FAIL with `HtmlReporter.report not implemented yet`.
 
 - [ ] **Step 3: Implement the real `report`**
@@ -784,17 +847,21 @@ export class HtmlReporter implements Reporter {
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/html.test.ts
 ```
+
 Expected: PASS — 12 tests.
 
 - [ ] **Step 5: Type-check and lint**
 
 Run:
+
 ```bash
 pnpm exec tsc --noEmit && pnpm lint
 ```
+
 Expected: exit 0.
 
 - [ ] **Step 6: Commit**
@@ -809,6 +876,7 @@ git commit -m "feat(html-reporter): write rendered html to output path"
 ### Task 9: Wire `html` into the reporter factory
 
 **Files:**
+
 - Modify: `src/reporters/index.ts` (factory switch around line 17)
 - Modify: `tests/reporters/index.test.ts`
 
@@ -823,29 +891,31 @@ import { HtmlReporter } from '../../src/reporters/html.js';
 Replace the `'builds the configured built-in reporters'` test with:
 
 ```ts
-  it('builds the configured built-in reporters', async () => {
-    const reporters = await createReporters(
-      [
-        { type: 'stdout' },
-        { type: 'json', output: 'out.json' },
-        { type: 'markdown', output: 'out.md' },
-        { type: 'html', output: 'out.html' },
-      ],
-      process.cwd(),
-    );
-    expect(reporters[0]).toBeInstanceOf(StdoutReporter);
-    expect(reporters[1]).toBeInstanceOf(JsonReporter);
-    expect(reporters[2]).toBeInstanceOf(MarkdownReporter);
-    expect(reporters[3]).toBeInstanceOf(HtmlReporter);
-  });
+it('builds the configured built-in reporters', async () => {
+  const reporters = await createReporters(
+    [
+      { type: 'stdout' },
+      { type: 'json', output: 'out.json' },
+      { type: 'markdown', output: 'out.md' },
+      { type: 'html', output: 'out.html' },
+    ],
+    process.cwd(),
+  );
+  expect(reporters[0]).toBeInstanceOf(StdoutReporter);
+  expect(reporters[1]).toBeInstanceOf(JsonReporter);
+  expect(reporters[2]).toBeInstanceOf(MarkdownReporter);
+  expect(reporters[3]).toBeInstanceOf(HtmlReporter);
+});
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters/index.test.ts
 ```
+
 Expected: FAIL with `Unknown reporter type: html`.
 
 - [ ] **Step 3: Wire the factory**
@@ -867,9 +937,11 @@ In the switch (around line 17), insert this case immediately after the `'markdow
 - [ ] **Step 4: Run the full reporter test suite**
 
 Run:
+
 ```bash
 pnpm exec vitest run tests/reporters
 ```
+
 Expected: PASS — all reporter tests.
 
 - [ ] **Step 5: Commit**
@@ -884,6 +956,7 @@ git commit -m "feat(html-reporter): register html in the reporter factory"
 ### Task 10: Document the new reporter in the README
 
 **Files:**
+
 - Modify: `README.md` (reporters table around line 89)
 
 - [ ] **Step 1: Add the html row to the reporters table**
@@ -914,25 +987,31 @@ git commit -m "docs(html-reporter): list html in the reporters table"
 - [ ] **Step 1: Run the full test suite**
 
 Run:
+
 ```bash
 pnpm test
 ```
+
 Expected: PASS — every test in the repo.
 
 - [ ] **Step 2: Type-check, lint, format-check**
 
 Run:
+
 ```bash
 pnpm exec tsc --noEmit && pnpm lint && pnpm fmt:check
 ```
+
 Expected: exit 0 for all three.
 
 - [ ] **Step 3: Build**
 
 Run:
+
 ```bash
 pnpm build
 ```
+
 Expected: exit 0; `dist/cli.js` and `dist/index.js` rebuilt.
 
 - [ ] **Step 4: End-to-end smoke via the CLI in a browser**
@@ -974,6 +1053,7 @@ open /tmp/rt-html-smoke/progress.html
 ```
 
 Expected (visual check in the browser):
+
 - Title "Refactor progress" with an ISO timestamp.
 - Overall summary card on top with combined counts (22 / 40) and an orange-ish aggregate bar (~55%).
 - Three refactor cards beneath: "Lazy routes" with a yellow bar at 36%, "Drop legacy &lt;Modal&gt;" (note the escaped `<`/`>`) with a red bar at 0% and no delta chip, "Replace lodash" with a green bar at 75%.

@@ -83,8 +83,8 @@ interface HtmlView {
   timestamp: string;
   grandDone: number;
   grandTotal: number;
-  overallPercentage: number;          // rounded
-  overallBarColor: string;            // hsl(...)
+  overallPercentage: number; // rounded
+  overallBarColor: string; // hsl(...)
   tasks: HtmlTaskView[];
 }
 
@@ -93,7 +93,7 @@ interface HtmlTaskView {
   done: number;
   total: number;
   percentage: number;
-  barColor: string;                   // hsl(...)
+  barColor: string; // hsl(...)
   delta: { text: string; kind: 'up' | 'down' } | null;
 }
 ```
@@ -102,7 +102,7 @@ Rules:
 
 - `grandDone = sum(tasks.done)`, `grandTotal = sum(tasks.total)`.
 - `overallPercentage = grandTotal === 0 ? 0 : Math.round((grandDone / grandTotal) * 100)`.
-- `barColor(p) = \`hsl(${Math.round(p * 1.2)}, 65%, 45%)\`` — 0% red, ~50% yellow, 100% green. Applied to both the overall bar and per-task bars.
+- `barColor(p) = \`hsl(${Math.round(p \* 1.2)}, 65%, 45%)\`` — 0% red, ~50% yellow, 100% green. Applied to both the overall bar and per-task bars.
 - `delta`:
   - `null` (first run) → `null` (no chip)
   - `0` → `null` (no chip — unchanged rows stay quiet)
@@ -116,50 +116,56 @@ The rendered document:
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Refactor progress</title>
-  <style>/* inline CSS, see below */</style>
-</head>
-<body>
-  <main>
-    <header>
-      <h1>Refactor progress</h1>
-      <time><%= it.timestamp %></time>
-    </header>
+  <head>
+    <meta charset="utf-8" />
+    <title>Refactor progress</title>
+    <style>
+      /* inline CSS, see below */
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Refactor progress</h1>
+        <time><%= it.timestamp %></time>
+      </header>
 
-    <section class="summary">
-      <div class="summary-head">
-        <span class="label">Overall</span>
-        <span class="counts"><%= it.grandDone %> / <%= it.grandTotal %></span>
-        <span class="pct"><%= it.overallPercentage %>%</span>
-      </div>
-      <div class="bar">
-        <div class="bar-fill"
-             style="width: <%= it.overallPercentage %>%; background: <%= it.overallBarColor %>"></div>
-      </div>
-    </section>
-
-    <ul class="refactors">
-      <% it.tasks.forEach(function (task) { %>
-      <li class="refactor">
-        <div class="head">
-          <span class="name"><%= task.name %></span>
-          <span class="counts"><%= task.done %> / <%= task.total %></span>
-          <span class="pct"><%= task.percentage %>%</span>
-          <% if (task.delta) { %>
-          <span class="delta delta-<%= task.delta.kind %>"><%= task.delta.text %></span>
-          <% } %>
+      <section class="summary">
+        <div class="summary-head">
+          <span class="label">Overall</span>
+          <span class="counts"><%= it.grandDone %> / <%= it.grandTotal %></span>
+          <span class="pct"><%= it.overallPercentage %>%</span>
         </div>
         <div class="bar">
-          <div class="bar-fill"
-               style="width: <%= task.percentage %>%; background: <%= task.barColor %>"></div>
+          <div
+            class="bar-fill"
+            style="width: <%= it.overallPercentage %>%; background: <%= it.overallBarColor %>"
+          ></div>
         </div>
-      </li>
-      <% }) %>
-    </ul>
-  </main>
-</body>
+      </section>
+
+      <ul class="refactors">
+        <% it.tasks.forEach(function (task) { %>
+        <li class="refactor">
+          <div class="head">
+            <span class="name"><%= task.name %></span>
+            <span class="counts"><%= task.done %> / <%= task.total %></span>
+            <span class="pct"><%= task.percentage %>%</span>
+            <% if (task.delta) { %>
+            <span class="delta delta-<%= task.delta.kind %>"><%= task.delta.text %></span>
+            <% } %>
+          </div>
+          <div class="bar">
+            <div
+              class="bar-fill"
+              style="width: <%= task.percentage %>%; background: <%= task.barColor %>"
+            ></div>
+          </div>
+        </li>
+        <% }) %>
+      </ul>
+    </main>
+  </body>
 </html>
 ```
 
@@ -208,11 +214,11 @@ Inline CSS (sketch — exact values may be tuned during implementation):
 
 ## Files Touched
 
-| File | Change |
-| --- | --- |
-| `src/reporters/html.ts` | New: `formatHtml`, `HtmlReporter`, inline `TEMPLATE`, compiled `render` |
-| `src/reporters/index.ts` | New `case 'html':` arm in the factory switch |
-| `tests/reporters/html.test.ts` | New: unit + integration tests |
-| `tests/reporters/index.test.ts` | Assert `html` config produces `HtmlReporter` |
-| `README.md` | Add `html` row to the reporters table |
-| `package.json` | Add `eta` to `dependencies` |
+| File                            | Change                                                                  |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| `src/reporters/html.ts`         | New: `formatHtml`, `HtmlReporter`, inline `TEMPLATE`, compiled `render` |
+| `src/reporters/index.ts`        | New `case 'html':` arm in the factory switch                            |
+| `tests/reporters/html.test.ts`  | New: unit + integration tests                                           |
+| `tests/reporters/index.test.ts` | Assert `html` config produces `HtmlReporter`                            |
+| `README.md`                     | Add `html` row to the reporters table                                   |
+| `package.json`                  | Add `eta` to `dependencies`                                             |
