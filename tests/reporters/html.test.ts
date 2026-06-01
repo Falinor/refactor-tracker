@@ -1,5 +1,8 @@
+import { mkdtemp, rm, readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { formatHtml } from '../../src/reporters/html.js';
+import { formatHtml, HtmlReporter } from '../../src/reporters/html.js';
 import type { Report } from '../../src/types.js';
 
 const report: Report = {
@@ -104,5 +107,20 @@ describe('formatHtml', () => {
     // "Drop legacy <Modal>" must be escaped — never appear raw
     expect(html).toContain('Drop legacy &lt;Modal&gt;');
     expect(html).not.toContain('Drop legacy <Modal>');
+  });
+});
+
+describe('HtmlReporter', () => {
+  it('writes html to the output file, creating parent directories', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'rt-html-'));
+    try {
+      const out = path.join(dir, 'docs', 'progress.html');
+      await new HtmlReporter(out).report(report);
+      const contents = await readFile(out, 'utf8');
+      expect(contents).toMatch(/^<!DOCTYPE html>/);
+      expect(contents).toContain('Lazy routes');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });

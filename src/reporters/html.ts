@@ -1,3 +1,5 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { Eta } from 'eta';
 import type { Report, Reporter } from '../types.js';
 
@@ -130,7 +132,9 @@ export function formatHtml(report: Report): string {
 
 export class HtmlReporter implements Reporter {
   constructor(private readonly output: string) {}
-  async report(_report: Report): Promise<void> {
-    throw new Error('HtmlReporter.report not implemented yet');
+
+  async report(report: Report): Promise<void> {
+    await mkdir(path.dirname(this.output), { recursive: true });
+    await writeFile(this.output, formatHtml(report), 'utf8');
   }
 }
