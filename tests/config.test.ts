@@ -58,6 +58,45 @@ refactors:
 `),
     ).toThrow();
   });
+
+  it('parses optional tags on a refactor as a string array', () => {
+    const config = parseConfig(`
+refactors:
+  - id: abc
+    name: Lazy routes
+    tags: [frontend, performance]
+    detect:
+      done: { command: "echo 1" }
+      total: { command: "echo 2" }
+`);
+    expect(config.refactors[0].tags).toEqual(['frontend', 'performance']);
+  });
+
+  it('leaves tags undefined when the field is omitted', () => {
+    const config = parseConfig(`
+refactors:
+  - id: abc
+    name: Lazy routes
+    detect:
+      done: { command: "echo 1" }
+      total: { command: "echo 2" }
+`);
+    expect(config.refactors[0].tags).toBeUndefined();
+  });
+
+  it('rejects a non-string-array tags value', () => {
+    expect(() =>
+      parseConfig(`
+refactors:
+  - id: abc
+    name: Lazy routes
+    tags: "frontend"
+    detect:
+      done: { command: "echo 1" }
+      total: { command: "echo 2" }
+`),
+    ).toThrow();
+  });
 });
 
 describe('expandEnv', () => {

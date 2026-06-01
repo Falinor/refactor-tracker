@@ -25,6 +25,7 @@ const refactorSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().optional(),
+  tags: z.array(z.string()).optional(),
   detect: detectSchema,
 });
 
