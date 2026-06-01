@@ -20,7 +20,7 @@ const TEMPLATE = `<!DOCTYPE html>
     .head .counts, .head .pct { color: #444; font-variant-numeric: tabular-nums; }
     .bar { height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-top: 0.5rem; }
     .bar-fill { height: 100%; transition: none; }
-    .summary { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin: 1rem 0; background: #fafafa; }
+    .summary { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin: 1rem 0 2rem; background: #fafafa; }
     .summary .name { font-weight: 700; font-size: 1.05em; }
     .summary .bar { height: 16px; border-radius: 8px; }
     .delta { padding: 0 0.5rem; border-radius: 999px; font-size: 0.85em; font-variant-numeric: tabular-nums; }
