@@ -86,12 +86,13 @@ refactor-tracker [options]
 
 ## Reporters
 
-| Reporter   | Output                                                                                 |
-| ---------- | -------------------------------------------------------------------------------------- |
-| `stdout`   | Progress table to the terminal (default when no reporters are configured)              |
-| `json`     | The full report object to a file (`output: <path>` required)                           |
-| `markdown` | A progress table to a `.md` file (`output: <path>` required)                           |
-| `custom`   | Your own module (`path: <path>`) — the extension point for Slack, Linear, Notion, etc. |
+| Reporter   | Output                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| `stdout`   | Progress table to the terminal (default when no reporters are configured)                   |
+| `json`     | The full report object to a file (`output: <path>` required)                                |
+| `markdown` | A progress table to a `.md` file (`output: <path>` required)                                |
+| `html`     | A self-contained HTML page with progress bars to a `.html` file (`output: <path>` required) |
+| `custom`   | Your own module (`path: <path>`) — the extension point for Slack, Linear, Notion, etc.      |
 
 ### Custom reporters
 
