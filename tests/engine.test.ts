@@ -199,6 +199,71 @@ describe('runEngine', () => {
     });
   });
 
+  it('attaches items when the list command returns content and remaining > 0', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const withList: Config = {
+        refactors: [
+          {
+            id: 'abc',
+            name: 'Lazy routes',
+            detect: {
+              done: { command: 'd' },
+              total: { command: 't' },
+              list: { command: 'ls' },
+            } as any,
+          },
+        ],
+      };
+      const listRun: CommandRunner = async (command) => {
+        const map: Record<string, string> = {
+          d: '4',
+          t: '11',
+          ls: 'src/foo.ts\nsrc/bar.ts\n',
+        };
+        return { stdout: map[command] ?? '0', exitCode: 0 };
+      };
+      const report = await runEngine(withList, { cachePath, run: listRun, now: fixedNow });
+      expect(report.tasks[0].items).toEqual(['src/foo.ts', 'src/bar.ts']);
+    });
+  });
+
+  it('skips the list command when remaining is 0', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const ran: string[] = [];
+      const trackingRun: CommandRunner = async (command) => {
+        ran.push(command);
+        const map: Record<string, string> = { d: '11', t: '11', ls: 'should-not-appear' };
+        return { stdout: map[command] ?? '0', exitCode: 0 };
+      };
+      const done: Config = {
+        refactors: [
+          {
+            id: 'abc',
+            name: 'Lazy routes',
+            detect: {
+              done: { command: 'd' },
+              total: { command: 't' },
+              list: { command: 'ls' },
+            } as any,
+          },
+        ],
+      };
+      const report = await runEngine(done, { cachePath, run: trackingRun, now: fixedNow });
+      expect(ran).not.toContain('ls');
+      expect(report.tasks[0]).not.toHaveProperty('items');
+    });
+  });
+
+  it('omits items when no list field is configured', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const report = await runEngine(config, { cachePath, run, now: fixedNow });
+      expect(report.tasks[0]).not.toHaveProperty('items');
+    });
+  });
+
   it('preserves cache entries for refactors excluded by tagFilter', async () => {
     await withTempDir(async (dir) => {
       const cachePath = path.join(dir, 'cache.json');

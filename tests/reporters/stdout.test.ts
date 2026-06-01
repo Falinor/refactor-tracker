@@ -57,3 +57,27 @@ describe('formatTable grouped by tag', () => {
     expect(formatTable(report)).not.toContain('## ');
   });
 });
+
+describe('formatTable ignores items', () => {
+  it('does not render item content in stdout output', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'Lazy routes',
+          done: 1,
+          total: 3,
+          percentage: 33,
+          delta: null,
+          items: ['src/foo.ts', 'src/bar.ts'],
+        },
+      ],
+    };
+    const out = formatTable(r);
+    expect(out).toContain('Lazy routes: 1/3 (33%)');
+    expect(out).not.toContain('src/foo.ts');
+    expect(out).not.toContain('src/bar.ts');
+  });
+});

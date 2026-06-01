@@ -1,6 +1,6 @@
 import type { Config } from './config.js';
 import type { Report, TaskResult } from './types.js';
-import { resolveDetection, type CommandRunner } from './detect.js';
+import { resolveDetection, resolveList, type CommandRunner } from './detect.js';
 import { runCommand } from './runner.js';
 import { readCache, writeCache, type Cache } from './cache.js';
 
@@ -42,6 +42,9 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
     const delta = prev ? done - prev.done : null;
     if (!prev || prev.done !== done || prev.total !== total) hasChanges = true;
 
+    const items =
+      total - done > 0 ? await resolveList(refactor.detect, run, options.cwd) : undefined;
+
     tasks.push({
       id: refactor.id,
       name: refactor.name,
@@ -51,6 +54,7 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
       total,
       percentage,
       delta,
+      ...(items ? { items } : {}),
     });
     nextCache[refactor.id] = { done, total, timestamp };
   }
