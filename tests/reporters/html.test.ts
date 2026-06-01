@@ -186,6 +186,47 @@ describe('formatHtml', () => {
   });
 });
 
+describe('formatHtml grouped by tag', () => {
+  it('renders one <section class="tag-group"> with <h2> per tag', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
+        { id: 'b', name: 'BE', tags: ['backend'], done: 0, total: 3, percentage: 0, delta: null },
+      ],
+    };
+    const html = formatHtml(r);
+    expect(html).toContain('<section class="tag-group">');
+    expect(html).toContain('<h2>frontend</h2>');
+    expect(html).toContain('<h2>backend</h2>');
+    expect(html.indexOf('<h2>frontend</h2>')).toBeLessThan(html.indexOf('<h2>backend</h2>'));
+    expect(html).toContain('FE');
+    expect(html).toContain('BE');
+  });
+
+  it('renders an "Untagged" section last when both tagged and untagged tasks exist', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
+        { id: 'b', name: 'Loose', done: 0, total: 3, percentage: 0, delta: null },
+      ],
+    };
+    const html = formatHtml(r);
+    expect(html).toContain('<h2>Untagged</h2>');
+    expect(html.indexOf('<h2>frontend</h2>')).toBeLessThan(html.indexOf('<h2>Untagged</h2>'));
+  });
+
+  it('renders a single flat <ul class="refactors"> when no task has tags', () => {
+    const html = formatHtml(report);
+    expect(html).not.toContain('tag-group');
+    expect(html).not.toContain('<h2>');
+    expect((html.match(/<ul class="refactors">/g) ?? []).length).toBe(1);
+  });
+});
+
 describe('HtmlReporter', () => {
   it('writes html to the output file, creating parent directories', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'rt-html-'));

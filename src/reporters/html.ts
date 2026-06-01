@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Eta } from 'eta';
 import type { Report, Reporter } from '../types.js';
+import { groupTasksByTag } from '../grouping.js';
 
 const TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
@@ -12,6 +13,7 @@ const TEMPLATE = `<!DOCTYPE html>
     :root { font-family: -apple-system, system-ui, sans-serif; color: #222; }
     main { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
     h1 { margin: 0 0 0.25rem; }
+    h2 { margin: 1.5rem 0 0.5rem; font-size: 1.1em; color: #444; }
     header time { color: #666; font-size: 0.9em; }
     ul.refactors { list-style: none; padding: 0; margin: 1rem 0 0; }
     .refactor { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin: 0.5rem 0; }
@@ -27,6 +29,7 @@ const TEMPLATE = `<!DOCTYPE html>
     .delta { padding: 0 0.5rem; border-radius: 999px; font-size: 0.85em; font-variant-numeric: tabular-nums; }
     .delta-up { background: #d4f4dd; color: #0a5028; }
     .delta-down { background: #f8d7da; color: #842029; }
+    <% if (!it.flat) { %>.tag-group { margin-top: 1.5rem; }<% } %>
   </style>
 </head>
 <body>
@@ -48,8 +51,9 @@ const TEMPLATE = `<!DOCTYPE html>
       </div>
     </section>
 
+    <% if (it.flat) { %>
     <ul class="refactors">
-      <% it.tasks.forEach(function (task) { %>
+      <% it.groups[0].tasks.forEach(function (task) { %>
       <li class="refactor">
         <div class="head">
           <span class="name"><%= task.name %></span>
@@ -69,6 +73,34 @@ const TEMPLATE = `<!DOCTYPE html>
       </li>
       <% }) %>
     </ul>
+    <% } else { %>
+    <% it.groups.forEach(function (group) { %>
+    <section class="tag-group">
+      <h2><%= group.heading %></h2>
+      <ul class="refactors">
+        <% group.tasks.forEach(function (task) { %>
+        <li class="refactor">
+          <div class="head">
+            <span class="name"><%= task.name %></span>
+            <span class="counts"><%= task.done %> / <%= task.total %></span>
+            <span class="pct"><%= task.percentage %>%</span>
+            <% if (task.delta) { %>
+            <span class="delta delta-<%= task.delta.kind %>"><%= task.delta.text %></span>
+            <% } %>
+          </div>
+          <% if (task.description) { %>
+          <p class="description"><%= task.description %></p>
+          <% } %>
+          <div class="bar">
+            <div class="bar-fill"
+                 style="width: <%= task.percentage %>%; background: <%= task.barColor %>"></div>
+          </div>
+        </li>
+        <% }) %>
+      </ul>
+    </section>
+    <% }) %>
+    <% } %>
   </main>
 </body>
 </html>
@@ -102,6 +134,11 @@ interface HtmlTaskView {
   delta: HtmlDeltaView | null;
 }
 
+interface HtmlGroupView {
+  heading: string;
+  tasks: HtmlTaskView[];
+}
+
 interface HtmlView {
   timestampIso: string;
   timestampLocal: string;
@@ -109,7 +146,8 @@ interface HtmlView {
   grandTotal: number;
   overallPercentage: number;
   overallBarColor: string;
-  tasks: HtmlTaskView[];
+  flat: boolean;
+  groups: HtmlGroupView[];
 }
 
 const TIMESTAMP_FORMAT = new Intl.DateTimeFormat(undefined, {
@@ -121,10 +159,28 @@ function formatTimestamp(iso: string): string {
   return TIMESTAMP_FORMAT.format(new Date(iso));
 }
 
+function toTaskView(t: Report['tasks'][number]): HtmlTaskView {
+  return {
+    name: t.name,
+    description: t.description ?? null,
+    done: t.done,
+    total: t.total,
+    percentage: t.percentage,
+    barColor: barColor(t.percentage),
+    delta: buildDelta(t.delta),
+  };
+}
+
 function buildView(report: Report): HtmlView {
   const grandDone = report.tasks.reduce((sum, t) => sum + t.done, 0);
   const grandTotal = report.tasks.reduce((sum, t) => sum + t.total, 0);
   const overallPercentage = grandTotal === 0 ? 0 : Math.round((grandDone / grandTotal) * 100);
+  const taskGroups = groupTasksByTag(report.tasks);
+  const flat = taskGroups.length === 1 && taskGroups[0].tag === null;
+  const groups: HtmlGroupView[] = taskGroups.map((g) => ({
+    heading: g.tag === null ? 'Untagged' : g.tag,
+    tasks: g.tasks.map(toTaskView),
+  }));
   return {
     timestampIso: report.timestamp,
     timestampLocal: formatTimestamp(report.timestamp),
@@ -132,15 +188,8 @@ function buildView(report: Report): HtmlView {
     grandTotal,
     overallPercentage,
     overallBarColor: barColor(overallPercentage),
-    tasks: report.tasks.map((t) => ({
-      name: t.name,
-      description: t.description ?? null,
-      done: t.done,
-      total: t.total,
-      percentage: t.percentage,
-      barColor: barColor(t.percentage),
-      delta: buildDelta(t.delta),
-    })),
+    flat,
+    groups,
   };
 }
 
