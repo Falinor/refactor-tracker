@@ -124,3 +124,7 @@ reporters:
 ## How it works
 
 Each run compares current counts against `.refactor-tracker-cache.json` (gitignored) to compute per-task `delta` and a global `hasChanges` flag, so reporters can skip noisy or expensive work when nothing moved. The cache is not updated in `--dry-run` mode.
+
+## Roadmap
+
+- **List remaining cases per refactor** — surface the actual items left to migrate (file paths, symbols, …), not just the count, so you can see what's left without re-running ad-hoc greps. Likely shape: an optional `list` command alongside `done`/`remaining`/`total` that prints one case per line; reporters render it as a collapsible section.
