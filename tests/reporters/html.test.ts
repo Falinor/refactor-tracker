@@ -77,4 +77,25 @@ describe('formatHtml', () => {
     // 0% → hue 0 (red)
     expect(html).toContain('background: hsl(0, 65%, 45%)');
   });
+
+  it('renders an overall summary with grand totals and aggregate percentage', () => {
+    const html = formatHtml(report);
+    // grandDone = 4 + 0 = 4; grandTotal = 11 + 5 = 16; round(4/16*100) = 25
+    expect(html).toContain('<section class="summary">');
+    expect(html).toContain('4 / 16');
+    expect(html).toContain('25%');
+    // 25% → hue round(25 * 1.2) = 30
+    expect(html).toContain('background: hsl(30, 65%, 45%)');
+  });
+
+  it('treats overall percentage as 0 when grandTotal is 0', () => {
+    const emptyReport: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: false,
+      tasks: [{ id: 'a', name: 'Empty', done: 0, total: 0, percentage: 0, delta: null }],
+    };
+    const html = formatHtml(emptyReport);
+    expect(html).toContain('0 / 0');
+    expect(html).toMatch(/<section class="summary">[\s\S]*?0%/);
+  });
 });

@@ -18,6 +18,8 @@ const TEMPLATE = `<!DOCTYPE html>
     .head .counts, .head .pct { color: #444; font-variant-numeric: tabular-nums; }
     .bar { height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-top: 0.5rem; }
     .bar-fill { height: 100%; }
+    .summary { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin: 1rem 0; background: #fafafa; }
+    .summary .name { font-weight: 700; font-size: 1.05em; }
     .delta { padding: 0 0.5rem; border-radius: 999px; font-size: 0.85em; font-variant-numeric: tabular-nums; }
     .delta-up { background: #d4f4dd; color: #0a5028; }
     .delta-down { background: #f8d7da; color: #842029; }
@@ -29,6 +31,18 @@ const TEMPLATE = `<!DOCTYPE html>
       <h1>Refactor progress</h1>
       <time><%= it.timestamp %></time>
     </header>
+
+    <section class="summary">
+      <div class="head">
+        <span class="name">Overall</span>
+        <span class="counts"><%= it.grandDone %> / <%= it.grandTotal %></span>
+        <span class="pct"><%= it.overallPercentage %>%</span>
+      </div>
+      <div class="bar">
+        <div class="bar-fill"
+             style="width: <%= it.overallPercentage %>%; background: <%= it.overallBarColor %>"></div>
+      </div>
+    </section>
 
     <ul class="refactors">
       <% it.tasks.forEach(function (task) { %>
@@ -82,12 +96,23 @@ interface HtmlTaskView {
 
 interface HtmlView {
   timestamp: string;
+  grandDone: number;
+  grandTotal: number;
+  overallPercentage: number;
+  overallBarColor: string;
   tasks: HtmlTaskView[];
 }
 
 function buildView(report: Report): HtmlView {
+  const grandDone = report.tasks.reduce((sum, t) => sum + t.done, 0);
+  const grandTotal = report.tasks.reduce((sum, t) => sum + t.total, 0);
+  const overallPercentage = grandTotal === 0 ? 0 : Math.round((grandDone / grandTotal) * 100);
   return {
     timestamp: report.timestamp,
+    grandDone,
+    grandTotal,
+    overallPercentage,
+    overallBarColor: barColor(overallPercentage),
     tasks: report.tasks.map((t) => ({
       name: t.name,
       done: t.done,
