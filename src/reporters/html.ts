@@ -22,6 +22,7 @@ const TEMPLATE = `<!DOCTYPE html>
     .bar-fill { height: 100%; transition: none; }
     .summary { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin: 1rem 0; background: #fafafa; }
     .summary .name { font-weight: 700; font-size: 1.05em; }
+    .summary .bar { height: 16px; border-radius: 8px; }
     .delta { padding: 0 0.5rem; border-radius: 999px; font-size: 0.85em; font-variant-numeric: tabular-nums; }
     .delta-up { background: #d4f4dd; color: #0a5028; }
     .delta-down { background: #f8d7da; color: #842029; }
@@ -31,10 +32,10 @@ const TEMPLATE = `<!DOCTYPE html>
   <main>
     <header>
       <h1>Refactor progress</h1>
-      <time><%= it.timestamp %></time>
+      <time datetime="<%= it.timestampIso %>"><%= it.timestampLocal %></time>
     </header>
 
-    <section class="summary">
+    <section class="summary" style="border-left: 4px solid <%= it.overallBarColor %>;">
       <div class="head">
         <span class="name">Overall</span>
         <span class="counts"><%= it.grandDone %> / <%= it.grandTotal %></span>
@@ -97,7 +98,8 @@ interface HtmlTaskView {
 }
 
 interface HtmlView {
-  timestamp: string;
+  timestampIso: string;
+  timestampLocal: string;
   grandDone: number;
   grandTotal: number;
   overallPercentage: number;
@@ -105,12 +107,22 @@ interface HtmlView {
   tasks: HtmlTaskView[];
 }
 
+const TIMESTAMP_FORMAT = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
+
+function formatTimestamp(iso: string): string {
+  return TIMESTAMP_FORMAT.format(new Date(iso));
+}
+
 function buildView(report: Report): HtmlView {
   const grandDone = report.tasks.reduce((sum, t) => sum + t.done, 0);
   const grandTotal = report.tasks.reduce((sum, t) => sum + t.total, 0);
   const overallPercentage = grandTotal === 0 ? 0 : Math.round((grandDone / grandTotal) * 100);
   return {
-    timestamp: report.timestamp,
+    timestampIso: report.timestamp,
+    timestampLocal: formatTimestamp(report.timestamp),
     grandDone,
     grandTotal,
     overallPercentage,

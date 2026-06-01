@@ -20,7 +20,26 @@ describe('formatHtml', () => {
     expect(html).toMatch(/^<!DOCTYPE html>/);
     expect(html).toContain('<title>Refactor progress</title>');
     expect(html).toContain('<h1>Refactor progress</h1>');
-    expect(html).toContain('2026-05-28T12:00:00.000Z');
+    expect(html).toContain('<time datetime="2026-05-28T12:00:00.000Z">');
+  });
+
+  it('renders the timestamp inside <time> with locale-formatted visible text', () => {
+    const html = formatHtml(report);
+    const visible =
+      html.match(/<time datetime="2026-05-28T12:00:00\.000Z">([^<]*)<\/time>/)?.[1] ?? '';
+    // Year appears in every common locale format; the raw ISO must not leak into the visible text.
+    expect(visible).toContain('2026');
+    expect(visible).not.toBe('2026-05-28T12:00:00.000Z');
+    expect(visible.length).toBeGreaterThan(0);
+  });
+
+  it('elevates the overall summary with a colored left accent and a taller bar', () => {
+    const html = formatHtml(report);
+    // Overall percentage 25 → barColor hsl(30, 65%, 45%); the accent uses the same color.
+    expect(html).toContain(
+      '<section class="summary" style="border-left: 4px solid hsl(30, 65%, 45%);">',
+    );
+    expect(html).toContain('.summary .bar { height: 16px;');
   });
 
   it('renders one .refactor card per task with name, counts, and percentage', () => {
@@ -84,7 +103,7 @@ describe('formatHtml', () => {
   it('renders an overall summary with grand totals and aggregate percentage', () => {
     const html = formatHtml(report);
     // grandDone = 4 + 0 = 4; grandTotal = 11 + 5 = 16; round(4/16*100) = 25
-    expect(html).toContain('<section class="summary">');
+    expect(html).toContain('<section class="summary"');
     expect(html).toContain('4 / 16');
     expect(html).toContain('25%');
     // 25% → hue round(25 * 1.2) = 30
@@ -99,7 +118,7 @@ describe('formatHtml', () => {
     };
     const html = formatHtml(emptyReport);
     expect(html).toContain('0 / 0');
-    expect(html).toMatch(/<section class="summary">[\s\S]*?0%/);
+    expect(html).toMatch(/<section class="summary"[\s\S]*?0%/);
   });
 
   it('html-escapes task names containing < and >', () => {

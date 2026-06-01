@@ -80,7 +80,8 @@ const render = eta.compile(TEMPLATE);
 
 ```ts
 interface HtmlView {
-  timestamp: string;
+  timestampIso: string; // raw ISO-8601, for <time datetime="...">
+  timestampLocal: string; // locale-formatted, for the visible text
   grandDone: number;
   grandTotal: number;
   overallPercentage: number; // rounded
@@ -100,6 +101,7 @@ interface HtmlTaskView {
 
 Rules:
 
+- `timestampIso = report.timestamp` (the raw ISO-8601 the engine produced); `timestampLocal = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(timestampIso))` — formatted with the renderer's default locale. The viewer's own locale is not used (would require client-side JS, which the spec rules out).
 - `grandDone = sum(tasks.done)`, `grandTotal = sum(tasks.total)`.
 - `overallPercentage = grandTotal === 0 ? 0 : Math.round((grandDone / grandTotal) * 100)`.
 - `barColor(p) = \`hsl(${Math.round(p \* 1.2)}, 65%, 45%)\`` — 0% red, ~50% yellow, 100% green. Applied to both the overall bar and per-task bars.
