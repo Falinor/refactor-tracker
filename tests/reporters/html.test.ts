@@ -19,4 +19,21 @@ describe('formatHtml', () => {
     expect(html).toContain('<h1>Refactor progress</h1>');
     expect(html).toContain('2026-05-28T12:00:00.000Z');
   });
+
+  it('renders one .refactor card per task with name, counts, and percentage', () => {
+    const html = formatHtml(report);
+    const cards = html.match(/<li class="refactor">/g) ?? [];
+    expect(cards).toHaveLength(2);
+    expect(html).toContain('Lazy routes');
+    expect(html).toContain('4 / 11');
+    expect(html).toContain('36%');
+    expect(html).toContain('0 / 5');
+    expect(html).toContain('0%');
+  });
+
+  it('renders a progress bar whose fill width matches the percentage', () => {
+    const html = formatHtml(report);
+    expect(html).toContain('width: 36%');
+    expect(html).toContain('width: 0%');
+  });
 });
