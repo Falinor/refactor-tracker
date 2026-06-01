@@ -83,3 +83,55 @@ describe('MarkdownReporter', () => {
     }
   });
 });
+
+describe('formatMarkdown grouped by tag', () => {
+  it('emits a heading and table per tag when any task has tags', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
+        { id: 'b', name: 'BE', tags: ['backend'], done: 0, total: 3, percentage: 0, delta: null },
+      ],
+    };
+    const md = formatMarkdown(r);
+    expect(md).toContain('## frontend');
+    expect(md).toContain('## backend');
+    expect(md.indexOf('## frontend')).toBeLessThan(md.indexOf('## backend'));
+    expect(md).toContain('| FE | 1 | 2 | 50% |');
+    expect(md).toContain('| BE | 0 | 3 | 0% |');
+  });
+
+  it('duplicates a multi-tag task under every matching group', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        { id: 'a', name: 'Both', tags: ['x', 'y'], done: 1, total: 2, percentage: 50, delta: null },
+      ],
+    };
+    const md = formatMarkdown(r);
+    const occurrences = md.split('| Both | 1 | 2 | 50% |').length - 1;
+    expect(occurrences).toBe(2);
+  });
+
+  it('renders an "Untagged" group last when both tagged and untagged tasks exist', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
+        { id: 'b', name: 'Loose', done: 0, total: 3, percentage: 0, delta: null },
+      ],
+    };
+    const md = formatMarkdown(r);
+    expect(md).toContain('## Untagged');
+    expect(md.indexOf('## frontend')).toBeLessThan(md.indexOf('## Untagged'));
+  });
+
+  it('renders flat (no group headings) when no task has tags', () => {
+    const md = formatMarkdown(report);
+    expect(md).not.toContain('## ');
+    expect(md).not.toContain('Untagged');
+  });
+});

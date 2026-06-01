@@ -1,34 +1,43 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Reporter, Report } from '../types.js';
+import type { Reporter, Report, TaskResult } from '../types.js';
+import { groupTasksByTag } from '../grouping.js';
 
 function escapeCell(s: string): string {
   return s.replaceAll('|', '\\|').replaceAll('\n', ' ');
 }
 
-export function formatMarkdown(report: Report): string {
-  const showDescription = report.tasks.some((t) => t.description);
+function renderTable(tasks: TaskResult[]): string[] {
+  const showDescription = tasks.some((t) => t.description);
   const headers = showDescription
     ? ['Refactor', 'Description', 'Done', 'Total', '%']
     : ['Refactor', 'Done', 'Total', '%'];
   const headerLine = `| ${headers.join(' | ')} |`;
   const separator = `| ${headers.map(() => '---').join(' | ')} |`;
-  const rows = report.tasks.map((t) => {
+  const rows = tasks.map((t) => {
     const cells = showDescription
       ? [t.name, escapeCell(t.description ?? ''), t.done, t.total, `${t.percentage}%`]
       : [t.name, t.done, t.total, `${t.percentage}%`];
     return `| ${cells.join(' | ')} |`;
   });
-  return [
-    '# Refactor progress',
-    '',
-    `_Updated: ${report.timestamp}_`,
-    '',
-    headerLine,
-    separator,
-    ...rows,
-    '',
-  ].join('\n');
+  return [headerLine, separator, ...rows];
+}
+
+export function formatMarkdown(report: Report): string {
+  const groups = groupTasksByTag(report.tasks);
+  const flat = groups.length === 1 && groups[0].tag === null;
+
+  const body: string[] = [];
+  if (flat) {
+    body.push(...renderTable(groups[0].tasks), '');
+  } else {
+    for (const g of groups) {
+      const heading = g.tag === null ? 'Untagged' : g.tag;
+      body.push(`## ${heading}`, '', ...renderTable(g.tasks), '');
+    }
+  }
+
+  return ['# Refactor progress', '', `_Updated: ${report.timestamp}_`, '', ...body].join('\n');
 }
 
 export class MarkdownReporter implements Reporter {
