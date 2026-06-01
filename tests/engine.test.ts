@@ -102,4 +102,129 @@ describe('runEngine', () => {
       expect(await readCache(cachePath)).toEqual({});
     });
   });
+
+  it('propagates tags onto the TaskResult when non-empty', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const tagged: Config = {
+        refactors: [
+          {
+            id: 'abc',
+            name: 'Lazy routes',
+            tags: ['frontend', 'performance'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+        ],
+      };
+      const report = await runEngine(tagged, { cachePath, run, now: fixedNow });
+      expect(report.tasks[0].tags).toEqual(['frontend', 'performance']);
+    });
+  });
+
+  it('omits the tags property when the refactor has no tags', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const report = await runEngine(config, { cachePath, run, now: fixedNow });
+      expect(report.tasks[0]).not.toHaveProperty('tags');
+    });
+  });
+
+  it('omits the tags property when the refactor has an empty tags array', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const empty: Config = {
+        refactors: [
+          {
+            id: 'abc',
+            name: 'Lazy routes',
+            tags: [],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+        ],
+      };
+      const report = await runEngine(empty, { cachePath, run, now: fixedNow });
+      expect(report.tasks[0]).not.toHaveProperty('tags');
+    });
+  });
+
+  it('filters refactors by tag (OR semantics) before running detection', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const ran: string[] = [];
+      const trackingRun: CommandRunner = async (command) => {
+        ran.push(command);
+        const map: Record<string, string> = { d: '4', t: '11' };
+        return { stdout: map[command] ?? '0', exitCode: 0 };
+      };
+      const multi: Config = {
+        refactors: [
+          {
+            id: 'fe',
+            name: 'FE',
+            tags: ['frontend'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+          {
+            id: 'be',
+            name: 'BE',
+            tags: ['backend'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+          {
+            id: 'both',
+            name: 'Both',
+            tags: ['frontend', 'perf'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+        ],
+      };
+      const report = await runEngine(multi, {
+        cachePath,
+        run: trackingRun,
+        now: fixedNow,
+        tagFilter: ['frontend'],
+      });
+      expect(report.tasks.map((t) => t.id)).toEqual(['fe', 'both']);
+      // Only 2 refactors ran detection → 2 commands per refactor → 4 calls total.
+      expect(ran).toHaveLength(4);
+    });
+  });
+
+  it('throws when tagFilter matches zero refactors', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      await expect(
+        runEngine(config, { cachePath, run, now: fixedNow, tagFilter: ['nope'] }),
+      ).rejects.toThrow(/no refactors match/i);
+    });
+  });
+
+  it('preserves cache entries for refactors excluded by tagFilter', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      await writeCache(cachePath, {
+        kept: { done: 9, total: 10, timestamp: 'old' },
+      });
+      const multi: Config = {
+        refactors: [
+          {
+            id: 'kept',
+            name: 'Kept',
+            tags: ['backend'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+          {
+            id: 'run',
+            name: 'Run',
+            tags: ['frontend'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+        ],
+      };
+      await runEngine(multi, { cachePath, run, now: fixedNow, tagFilter: ['frontend'] });
+      const written = await readCache(cachePath);
+      expect(written.kept).toEqual({ done: 9, total: 10, timestamp: 'old' });
+      expect(written.run).toEqual({ done: 4, total: 11, timestamp: '2026-05-28T12:00:00.000Z' });
+    });
+  });
 });

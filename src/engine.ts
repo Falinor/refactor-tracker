@@ -8,8 +8,9 @@ export interface EngineOptions {
   cachePath: string;
   cwd?: string;
   dryRun?: boolean;
-  run?: CommandRunner; // injectable for tests; defaults to the real shell runner
-  now?: () => Date; // injectable for tests; defaults to wall clock
+  run?: CommandRunner;
+  now?: () => Date;
+  tagFilter?: string[];
 }
 
 export async function runEngine(config: Config, options: EngineOptions): Promise<Report> {
@@ -18,11 +19,23 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
   const timestamp = now().toISOString();
   const cache = await readCache(options.cachePath);
 
+  const filter = options.tagFilter;
+  const filterActive = filter !== undefined && filter.length > 0;
+  const filtered = filterActive
+    ? config.refactors.filter((r) => (r.tags ?? []).some((t) => filter.includes(t)))
+    : config.refactors;
+  if (filterActive && filtered.length === 0) {
+    throw new Error(`No refactors match the requested tags: ${filter.join(', ')}`);
+  }
+
   const tasks: TaskResult[] = [];
-  const nextCache: Cache = {};
+  // When a tag filter is active, seed nextCache from the prior cache so
+  // skipped refactors keep their entries (otherwise --fail-on-regression
+  // on the next full run would see them as first-time, delta null).
+  const nextCache: Cache = filterActive ? { ...cache } : {};
   let hasChanges = false;
 
-  for (const refactor of config.refactors) {
+  for (const refactor of filtered) {
     const { done, total } = await resolveDetection(refactor.detect, run, options.cwd);
     const percentage = total === 0 ? 0 : Math.round((done / total) * 100);
     const prev = cache[refactor.id];
@@ -33,6 +46,7 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
       id: refactor.id,
       name: refactor.name,
       ...(refactor.description ? { description: refactor.description } : {}),
+      ...(refactor.tags && refactor.tags.length > 0 ? { tags: refactor.tags } : {}),
       done,
       total,
       percentage,
