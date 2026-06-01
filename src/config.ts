@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 const commandField = z.object({ command: z.string() });
 
-const detectBinary = z.object({
+const detectBinary = z.strictObject({
   command: z.string(),
   binary: z.literal(true),
 });
@@ -14,6 +14,7 @@ const detectCounts = z
     done: commandField.optional(),
     remaining: commandField.optional(),
     total: commandField.optional(),
+    list: commandField.optional(),
   })
   .refine((d) => [d.done, d.remaining, d.total].filter(Boolean).length >= 2, {
     message: 'detect must provide at least two of done/remaining/total',

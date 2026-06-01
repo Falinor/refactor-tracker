@@ -84,6 +84,35 @@ refactors:
     expect(config.refactors[0].tags).toBeUndefined();
   });
 
+  it('accepts an optional list command alongside count fields', () => {
+    const config = parseConfig(`
+refactors:
+  - id: abc
+    name: Lazy routes
+    detect:
+      done: { command: "echo 1" }
+      total: { command: "echo 2" }
+      list: { command: "echo foo" }
+`);
+    expect(config.refactors[0].detect).toMatchObject({
+      list: { command: 'echo foo' },
+    });
+  });
+
+  it('rejects a list field combined with binary: true', () => {
+    expect(() =>
+      parseConfig(`
+refactors:
+  - id: bin
+    name: Bin
+    detect:
+      command: "node -e 'process.exit(0)'"
+      binary: true
+      list: { command: "echo foo" }
+`),
+    ).toThrow();
+  });
+
   it('rejects a non-string-array tags value', () => {
     expect(() =>
       parseConfig(`

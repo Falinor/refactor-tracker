@@ -7,6 +7,7 @@ export interface TaskResult {
   total: number;
   percentage: number; // 0–100, rounded
   delta: number | null; // change in `done` vs previous run; null on first run
+  items?: string[]; // present iff list command ran and returned items
 }
 
 export interface Report {
