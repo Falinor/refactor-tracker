@@ -118,7 +118,7 @@ Behavior:
 - Group order = first-seen tag order from the input. "Untagged" group is always last.
 - If **no** task has any tag, return a single `{ tag: null, tasks }` group — reporters treat this as the "flat" signal.
 
-Reporters detect "flat" by checking `groups.length === 1 && groups[0].tag === null && everyTask.tags is empty`. When flat, render exactly as today (no group heading).
+Reporters detect "flat" by checking `groups.length === 1 && groups[0].tag === null` (the helper only emits a lone untagged group when no tag was ever seen). When flat, render exactly as today (no group heading).
 
 ## Reporter changes
 
