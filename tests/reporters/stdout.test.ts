@@ -21,3 +21,39 @@ describe('formatTable', () => {
     expect(out).toContain('Regressed: 2/5 (40%) (-1)');
   });
 });
+
+describe('formatTable grouped by tag', () => {
+  it('emits a heading per group when any task has tags', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
+        { id: 'b', name: 'BE', tags: ['backend'], done: 0, total: 3, percentage: 0, delta: null },
+      ],
+    };
+    const out = formatTable(r);
+    expect(out).toContain('## frontend');
+    expect(out).toContain('## backend');
+    expect(out).toContain('FE: 1/2 (50%)');
+    expect(out).toContain('BE: 0/3 (0%)');
+  });
+
+  it('renders an "Untagged" group last when both tagged and untagged tasks exist', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
+        { id: 'b', name: 'Loose', done: 0, total: 3, percentage: 0, delta: null },
+      ],
+    };
+    const out = formatTable(r);
+    expect(out.indexOf('## frontend')).toBeLessThan(out.indexOf('## Untagged'));
+    expect(out).toContain('Loose: 0/3 (0%)');
+  });
+
+  it('renders flat (no headings) when no task has tags', () => {
+    expect(formatTable(report)).not.toContain('## ');
+  });
+});
