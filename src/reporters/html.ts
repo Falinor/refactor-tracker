@@ -17,7 +17,7 @@ const TEMPLATE = `<!DOCTYPE html>
     .head .name { flex: 1; font-weight: 600; }
     .head .counts, .head .pct { color: #444; font-variant-numeric: tabular-nums; }
     .bar { height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-top: 0.5rem; }
-    .bar-fill { height: 100%; background: #333; }
+    .bar-fill { height: 100%; }
     .delta { padding: 0 0.5rem; border-radius: 999px; font-size: 0.85em; font-variant-numeric: tabular-nums; }
     .delta-up { background: #d4f4dd; color: #0a5028; }
     .delta-down { background: #f8d7da; color: #842029; }
@@ -42,7 +42,8 @@ const TEMPLATE = `<!DOCTYPE html>
           <% } %>
         </div>
         <div class="bar">
-          <div class="bar-fill" style="width: <%= task.percentage %>%"></div>
+          <div class="bar-fill"
+               style="width: <%= task.percentage %>%; background: <%= task.barColor %>"></div>
         </div>
       </li>
       <% }) %>
@@ -60,6 +61,10 @@ interface HtmlDeltaView {
   kind: 'up' | 'down';
 }
 
+function barColor(percentage: number): string {
+  return `hsl(${Math.round(percentage * 1.2)}, 65%, 45%)`;
+}
+
 function buildDelta(delta: number | null): HtmlDeltaView | null {
   if (delta === null || delta === 0) return null;
   if (delta > 0) return { text: `+${delta}`, kind: 'up' };
@@ -71,6 +76,7 @@ interface HtmlTaskView {
   done: number;
   total: number;
   percentage: number;
+  barColor: string;
   delta: HtmlDeltaView | null;
 }
 
@@ -87,6 +93,7 @@ function buildView(report: Report): HtmlView {
       done: t.done,
       total: t.total,
       percentage: t.percentage,
+      barColor: barColor(t.percentage),
       delta: buildDelta(t.delta),
     })),
   };

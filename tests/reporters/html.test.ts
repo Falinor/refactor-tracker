@@ -69,4 +69,12 @@ describe('formatHtml', () => {
     const html = formatHtml(regressionReport);
     expect(html).toContain('<span class="delta delta-down">−2</span>');
   });
+
+  it('colors each progress bar by completion using hsl', () => {
+    const html = formatHtml(report);
+    // 36% → hue round(36 * 1.2) = 43
+    expect(html).toContain('background: hsl(43, 65%, 45%)');
+    // 0% → hue 0 (red)
+    expect(html).toContain('background: hsl(0, 65%, 45%)');
+  });
 });
