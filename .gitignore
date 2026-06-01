@@ -3,3 +3,5 @@ dist/
 .refactor-tracker-cache.json
 *.log
 .claude/settings.local.json
+docs/specs/
+docs/superpowers/plans/
