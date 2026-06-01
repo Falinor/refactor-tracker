@@ -5,6 +5,7 @@ import { createReporters } from '../../src/reporters/index.js';
 import { StdoutReporter } from '../../src/reporters/stdout.js';
 import { JsonReporter } from '../../src/reporters/json.js';
 import { MarkdownReporter } from '../../src/reporters/markdown.js';
+import { HtmlReporter } from '../../src/reporters/html.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixturesDir = path.join(here, '..', 'fixtures');
@@ -22,12 +23,14 @@ describe('createReporters', () => {
         { type: 'stdout' },
         { type: 'json', output: 'out.json' },
         { type: 'markdown', output: 'out.md' },
+        { type: 'html', output: 'out.html' },
       ],
       process.cwd(),
     );
     expect(reporters[0]).toBeInstanceOf(StdoutReporter);
     expect(reporters[1]).toBeInstanceOf(JsonReporter);
     expect(reporters[2]).toBeInstanceOf(MarkdownReporter);
+    expect(reporters[3]).toBeInstanceOf(HtmlReporter);
   });
 
   it('loads a custom reporter from a module path relative to baseDir', async () => {
