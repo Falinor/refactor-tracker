@@ -89,6 +89,30 @@ refactor-tracker [options]
   run: pnpm dlx refactor-tracker --fail-on-regression --dry-run
 ```
 
+## Tagging
+
+Attach **tags** to any refactor to group reports and filter from the CLI:
+
+```yaml
+refactors:
+  - id: lazy-routes
+    name: Lazy-load top-level routes
+    tags: [frontend, performance]
+    detect: { ... }
+```
+
+Tags are optional and a refactor may carry any number of them. When any refactor has a tag, `stdout`, `markdown`, and `html` reporters render one section per tag (a refactor with N tags appears in N sections). Untagged refactors fall into a trailing `Untagged` group; the group is omitted when every refactor has at least one tag.
+
+Filter with `--tag` (repeatable, OR semantics):
+
+```bash
+refactor-tracker --tag frontend
+refactor-tracker --tag frontend --tag performance   # any refactor with frontend OR performance
+refactor-tracker --tag=frontend                     # = form also accepted
+```
+
+Skipped refactors keep their cache entries from previous runs, so partial runs don't break `--fail-on-regression` on the next full run.
+
 ## Reporters
 
 | Reporter   | Output                                                                                      |
