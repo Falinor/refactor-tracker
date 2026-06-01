@@ -23,6 +23,7 @@ const TEMPLATE = `<!DOCTYPE html>
     .summary { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin: 1rem 0 2rem; background: #fafafa; }
     .summary .name { font-weight: 700; font-size: 1.05em; }
     .summary .bar { height: 16px; border-radius: 8px; }
+    .description { margin: 0.25rem 0 0; color: #666; font-size: 0.9em; }
     .delta { padding: 0 0.5rem; border-radius: 999px; font-size: 0.85em; font-variant-numeric: tabular-nums; }
     .delta-up { background: #d4f4dd; color: #0a5028; }
     .delta-down { background: #f8d7da; color: #842029; }
@@ -58,6 +59,9 @@ const TEMPLATE = `<!DOCTYPE html>
           <span class="delta delta-<%= task.delta.kind %>"><%= task.delta.text %></span>
           <% } %>
         </div>
+        <% if (task.description) { %>
+        <p class="description"><%= task.description %></p>
+        <% } %>
         <div class="bar">
           <div class="bar-fill"
                style="width: <%= task.percentage %>%; background: <%= task.barColor %>"></div>
@@ -90,6 +94,7 @@ function buildDelta(delta: number | null): HtmlDeltaView | null {
 
 interface HtmlTaskView {
   name: string;
+  description: string | null;
   done: number;
   total: number;
   percentage: number;
@@ -129,6 +134,7 @@ function buildView(report: Report): HtmlView {
     overallBarColor: barColor(overallPercentage),
     tasks: report.tasks.map((t) => ({
       name: t.name,
+      description: t.description ?? null,
       done: t.done,
       total: t.total,
       percentage: t.percentage,

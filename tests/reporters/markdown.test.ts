@@ -19,6 +19,58 @@ describe('formatMarkdown', () => {
   });
 });
 
+describe('formatMarkdown with descriptions', () => {
+  it('adds a Description column when at least one task has a description', () => {
+    const withDesc: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'Lazy routes',
+          description: 'Frontend route lazy-loading rollout',
+          done: 4,
+          total: 11,
+          percentage: 36,
+          delta: 3,
+        },
+        { id: 'b', name: 'No desc', done: 0, total: 5, percentage: 0, delta: null },
+      ],
+    };
+    const md = formatMarkdown(withDesc);
+    expect(md).toContain('| Refactor | Description | Done | Total | % |');
+    expect(md).toContain('| Lazy routes | Frontend route lazy-loading rollout | 4 | 11 | 36% |');
+    // Row without a description gets an empty cell, not "undefined".
+    expect(md).toContain('| No desc |  | 0 | 5 | 0% |');
+  });
+
+  it('omits the Description column when no task has a description', () => {
+    const md = formatMarkdown(report);
+    expect(md).toContain('| Refactor | Done | Total | % |');
+    expect(md).not.toContain('Description');
+  });
+
+  it('escapes pipes inside a description so the table stays valid', () => {
+    const withPipe: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'Foo',
+          description: 'left | right',
+          done: 1,
+          total: 2,
+          percentage: 50,
+          delta: null,
+        },
+      ],
+    };
+    const md = formatMarkdown(withPipe);
+    expect(md).toContain('| left \\| right |');
+  });
+});
+
 describe('MarkdownReporter', () => {
   it('writes markdown to the output file, creating parent directories', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'rt-md-'));

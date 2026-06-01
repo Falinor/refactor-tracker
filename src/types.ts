@@ -1,6 +1,7 @@
 export interface TaskResult {
   id: string;
   name: string;
+  description?: string; // optional one-line context for the refactor
   done: number;
   total: number;
   percentage: number; // 0–100, rounded

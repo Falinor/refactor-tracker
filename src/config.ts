@@ -24,6 +24,7 @@ const detectSchema = z.union([detectBinary, detectCounts]);
 const refactorSchema = z.object({
   id: z.string(),
   name: z.string(),
+  description: z.string().optional(),
   detect: detectSchema,
 });
 

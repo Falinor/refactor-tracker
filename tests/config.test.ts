@@ -33,6 +33,19 @@ refactors:
     expect(config.refactors[0].detect).toMatchObject({ binary: true });
   });
 
+  it('parses an optional description on a refactor', () => {
+    const config = parseConfig(`
+refactors:
+  - id: abc
+    name: Lazy routes
+    description: Frontend route lazy-loading rollout
+    detect:
+      done: { command: "echo 1" }
+      total: { command: "echo 2" }
+`);
+    expect(config.refactors[0].description).toBe('Frontend route lazy-loading rollout');
+  });
+
   it('rejects a detect with fewer than two of done/remaining/total', () => {
     expect(() =>
       parseConfig(`

@@ -27,6 +27,7 @@ reporters:
 refactors:
   - id: lazy-routes
     name: Importer dynamiquement les routes
+    description: Lazy-load top-level route views to cut the initial JS bundle
     detect:
       done:
         command: "grep -rl 'React.lazy' frontend/src/views | wc -l | tr -d ' '"
@@ -60,6 +61,8 @@ Provide any **two** of `done` / `remaining` / `total` and the third is computed:
 | `binary: true`        | `total = 1`, `done = 1` if the command **exits 0**, else `0` |
 
 Each `command` must print a non-negative integer to stdout (binary commands signal via exit code instead).
+
+An optional `description` field gives a one-line context blurb. It flows through to the JSON output, renders as a subtitle in the HTML reporter, and adds a `Description` column to the markdown reporter (the column is omitted entirely when no refactor has one). The stdout reporter ignores it.
 
 Reporter config values that are exactly `$VAR` (e.g. `token: $MY_TOKEN`) are expanded from the environment at runtime and never stored. A missing variable is a hard error.
 

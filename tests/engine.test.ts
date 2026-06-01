@@ -69,6 +69,32 @@ describe('runEngine', () => {
     });
   });
 
+  it('propagates a refactor description into the TaskResult when present', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const withDesc: Config = {
+        refactors: [
+          {
+            id: 'abc',
+            name: 'Lazy routes',
+            description: 'Frontend route lazy-loading rollout',
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+        ],
+      };
+      const report = await runEngine(withDesc, { cachePath, run, now: fixedNow });
+      expect(report.tasks[0].description).toBe('Frontend route lazy-loading rollout');
+    });
+  });
+
+  it('omits description on the TaskResult when none is configured', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const report = await runEngine(config, { cachePath, run, now: fixedNow });
+      expect(report.tasks[0]).not.toHaveProperty('description');
+    });
+  });
+
   it('does not write the cache in dry-run mode', async () => {
     await withTempDir(async (dir) => {
       const cachePath = path.join(dir, 'cache.json');

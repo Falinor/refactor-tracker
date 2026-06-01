@@ -128,6 +128,52 @@ describe('formatHtml', () => {
     expect(html).not.toContain('Drop legacy <Modal>');
   });
 
+  it('renders a description subtitle when a task has one', () => {
+    const withDesc: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'Lazy routes',
+          description: 'Frontend route lazy-loading rollout',
+          done: 4,
+          total: 11,
+          percentage: 36,
+          delta: 3,
+        },
+      ],
+    };
+    const html = formatHtml(withDesc);
+    expect(html).toContain('<p class="description">Frontend route lazy-loading rollout</p>');
+  });
+
+  it('omits the description element when a task has no description', () => {
+    const html = formatHtml(report);
+    // Neither fixture task has a description.
+    expect(html).not.toContain('class="description"');
+  });
+
+  it('html-escapes a description containing < and &', () => {
+    const withDesc: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'Foo',
+          description: 'A & B <C>',
+          done: 1,
+          total: 2,
+          percentage: 50,
+          delta: null,
+        },
+      ],
+    };
+    const html = formatHtml(withDesc);
+    expect(html).toContain('A &amp; B &lt;C&gt;');
+  });
+
   it('html-escapes task names containing &', () => {
     const ampReport: Report = {
       timestamp: '2026-05-28T12:00:00.000Z',

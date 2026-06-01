@@ -29,7 +29,15 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
     const delta = prev ? done - prev.done : null;
     if (!prev || prev.done !== done || prev.total !== total) hasChanges = true;
 
-    tasks.push({ id: refactor.id, name: refactor.name, done, total, percentage, delta });
+    tasks.push({
+      id: refactor.id,
+      name: refactor.name,
+      ...(refactor.description ? { description: refactor.description } : {}),
+      done,
+      total,
+      percentage,
+      delta,
+    });
     nextCache[refactor.id] = { done, total, timestamp };
   }
 
