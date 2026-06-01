@@ -36,4 +36,37 @@ describe('formatHtml', () => {
     expect(html).toContain('width: 36%');
     expect(html).toContain('width: 0%');
   });
+
+  it('renders a green delta chip for positive delta', () => {
+    const html = formatHtml(report);
+    expect(html).toContain('<span class="delta delta-up">+3</span>');
+  });
+
+  it('omits the delta chip when delta is null (first run)', () => {
+    const html = formatHtml(report);
+    // Second card belongs to "Drop legacy <Modal>" with delta: null.
+    const cards = html.match(/<li class="refactor">[\s\S]*?<\/li>/g) ?? [];
+    const modalCard = cards[1] ?? '';
+    expect(modalCard).not.toContain('class="delta');
+  });
+
+  it('omits the delta chip when delta is 0', () => {
+    const zeroReport: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: false,
+      tasks: [{ id: 'a', name: 'Stable', done: 4, total: 10, percentage: 40, delta: 0 }],
+    };
+    const html = formatHtml(zeroReport);
+    expect(html).not.toContain('class="delta');
+  });
+
+  it('renders a red delta chip with U+2212 minus for negative delta', () => {
+    const regressionReport: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [{ id: 'a', name: 'Backslid', done: 3, total: 10, percentage: 30, delta: -2 }],
+    };
+    const html = formatHtml(regressionReport);
+    expect(html).toContain('<span class="delta delta-down">−2</span>');
+  });
 });

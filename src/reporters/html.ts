@@ -18,6 +18,9 @@ const TEMPLATE = `<!DOCTYPE html>
     .head .counts, .head .pct { color: #444; font-variant-numeric: tabular-nums; }
     .bar { height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-top: 0.5rem; }
     .bar-fill { height: 100%; background: #333; }
+    .delta { padding: 0 0.5rem; border-radius: 999px; font-size: 0.85em; font-variant-numeric: tabular-nums; }
+    .delta-up { background: #d4f4dd; color: #0a5028; }
+    .delta-down { background: #f8d7da; color: #842029; }
   </style>
 </head>
 <body>
@@ -34,6 +37,9 @@ const TEMPLATE = `<!DOCTYPE html>
           <span class="name"><%= task.name %></span>
           <span class="counts"><%= task.done %> / <%= task.total %></span>
           <span class="pct"><%= task.percentage %>%</span>
+          <% if (task.delta) { %>
+          <span class="delta delta-<%= task.delta.kind %>"><%= task.delta.text %></span>
+          <% } %>
         </div>
         <div class="bar">
           <div class="bar-fill" style="width: <%= task.percentage %>%"></div>
@@ -49,11 +55,23 @@ const TEMPLATE = `<!DOCTYPE html>
 const eta = new Eta({ autoEscape: true, useWith: false });
 const render = eta.compile(TEMPLATE);
 
+interface HtmlDeltaView {
+  text: string;
+  kind: 'up' | 'down';
+}
+
+function buildDelta(delta: number | null): HtmlDeltaView | null {
+  if (delta === null || delta === 0) return null;
+  if (delta > 0) return { text: `+${delta}`, kind: 'up' };
+  return { text: `−${-delta}`, kind: 'down' };
+}
+
 interface HtmlTaskView {
   name: string;
   done: number;
   total: number;
   percentage: number;
+  delta: HtmlDeltaView | null;
 }
 
 interface HtmlView {
@@ -69,6 +87,7 @@ function buildView(report: Report): HtmlView {
       done: t.done,
       total: t.total,
       percentage: t.percentage,
+      delta: buildDelta(t.delta),
     })),
   };
 }
