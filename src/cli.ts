@@ -22,6 +22,7 @@ export async function execute(options: ExecuteOptions): Promise<number> {
   try {
     report = await runEngine(config, {
       cachePath: path.join(baseDir, '.refactor-tracker-cache.json'),
+      statePath: path.join(baseDir, '.refactor-tracker-state.json'),
       cwd: baseDir,
       dryRun: options.dryRun,
       tagFilter: options.tags,

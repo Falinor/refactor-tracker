@@ -3,9 +3,11 @@ import type { Report, TaskResult } from './types.js';
 import { resolveDetection, resolveList, type CommandRunner } from './detect.js';
 import { runCommand } from './runner.js';
 import { readCache, writeCache, type Cache } from './cache.js';
+import { readState } from './state.js';
 
 export interface EngineOptions {
   cachePath: string;
+  statePath: string;
   cwd?: string;
   dryRun?: boolean;
   run?: CommandRunner;
@@ -18,6 +20,7 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
   const now = options.now ?? (() => new Date());
   const timestamp = now().toISOString();
   const cache = await readCache(options.cachePath);
+  const state = await readState(options.statePath);
 
   const filter = options.tagFilter;
   const filterActive = filter !== undefined && filter.length > 0;
@@ -45,6 +48,18 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
     const items =
       total - done > 0 ? await resolveList(refactor.detect, run, options.cwd) : undefined;
 
+    const stateEntry = state[refactor.id];
+    let registeredAt: string | null;
+    if (refactor.registeredAt) {
+      registeredAt = refactor.registeredAt;
+    } else if (stateEntry?.registeredAt) {
+      registeredAt = stateEntry.registeredAt;
+    } else if (cache[refactor.id]) {
+      registeredAt = null;
+    } else {
+      registeredAt = timestamp;
+    }
+
     tasks.push({
       id: refactor.id,
       name: refactor.name,
@@ -55,7 +70,7 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
       percentage,
       delta,
       ...(items ? { items } : {}),
-      registeredAt: null,
+      registeredAt,
       completedAt: null,
       durationDays: null,
     });
