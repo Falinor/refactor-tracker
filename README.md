@@ -12,6 +12,8 @@ pnpm add -D refactor-tracker
 pnpm dlx refactor-tracker
 ```
 
+Published from a pnpm workspace at `packages/core/`; downstream consumers `npm install refactor-tracker` as before.
+
 ## Configuration
 
 Create `.tech-refactors.yml` at your repo root (override with `--config <path>`):

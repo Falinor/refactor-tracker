@@ -6,22 +6,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This repo uses **pnpm**. ESM-only, Node 24 in CI.
 
-| Task                | Command                                           |
-| ------------------- | ------------------------------------------------- |
-| Build (to `dist/`)  | `pnpm build` (tsdown)                             |
-| Run tests once      | `pnpm test` (vitest run)                          |
-| Watch tests         | `pnpm dev`                                        |
-| Single test file    | `pnpm exec vitest run tests/engine.test.ts`       |
-| Single test by name | `pnpm exec vitest run -t "computes delta"`        |
-| Type-check only     | `pnpm exec tsc --noEmit`                          |
-| Lint                | `pnpm lint` (oxlint) · `pnpm lint:fix` to autofix |
-| Format              | `pnpm fmt` (oxfmt) · `pnpm fmt:check` to verify   |
+| Task                | Command                                                               |
+| ------------------- | --------------------------------------------------------------------- |
+| Build all packages  | `pnpm -r build`                                                       |
+| Run tests once      | `pnpm -r test`                                                        |
+| Watch tests (core)  | `pnpm dev`                                                            |
+| Single test file    | `pnpm --filter refactor-tracker exec vitest run tests/engine.test.ts` |
+| Single test by name | `pnpm --filter refactor-tracker exec vitest run -t "computes delta"`  |
+| Type-check only     | `pnpm --filter refactor-tracker exec tsc --noEmit`                    |
+| Lint                | `pnpm lint` (oxlint) · `pnpm lint:fix` to autofix                     |
+| Format              | `pnpm fmt` (oxfmt) · `pnpm fmt:check` to verify                       |
 
 Lint/format are handled by the **oxc** toolchain: `oxlint` (config in `.oxlintrc.json` — `correctness` category as errors, with the `typescript`/`unicorn`/`oxc` plugins) and `oxfmt`. A `lint-staged` config runs `oxfmt` then `oxlint --fix` on staged JS/TS files.
 
-The package ships only `dist/`; the build emits ESM + `.d.ts` for both the CLI (`src/cli.ts`) and the library entry (`src/index.ts`).
+The published `refactor-tracker` package ships only `packages/core/dist/`; the build emits ESM + `.d.ts` for both the CLI (`src/cli.ts`) and the library entry (`src/index.ts`).
 
 ## Architecture
+
+The repo is a pnpm workspace. `packages/core/` is the published `refactor-tracker` CLI/library — the pipeline described below. Additional reporter packages can live as sibling workspace packages (e.g. a future `packages/notion-reporter/`) and are loaded via the `custom` reporter mechanism.
 
 A language-agnostic CLI that runs shell **detection commands**, counts refactor progress, diffs against a cache, and dispatches to reporters. The tool is a _number collector_ — it never inspects code itself; any command that prints a non-negative integer (or, for `binary`, signals via exit code) is a valid detector.
 
@@ -44,4 +46,4 @@ Pipeline (one direction, each stage in its own file):
 
 ## Commits & releases
 
-Commits **must** follow Conventional Commits — enforced locally by a husky `commit-msg` hook (commitlint) and in CI. `main` runs `semantic-release` on push (version bump, CHANGELOG, npm + GitHub release), so the commit type drives the next published version.
+Commits **must** follow Conventional Commits — enforced locally by a husky `commit-msg` hook (commitlint) and in CI. On push to `main`, the **release-please** GitHub Action opens or updates a "Release PR" containing per-package version bumps and CHANGELOG entries (independent versions, one tag and GitHub Release per package, tag format `<package>-v<version>`). Merging the Release PR triggers a CI step that runs `pnpm publish` for each released package. The commit _type_ drives the next bump (`feat:` → minor, `fix:` → patch, `feat!:` or `BREAKING CHANGE` → major; under `0.x.y`, `feat:` stays in the minor lane per `bump-minor-pre-major`).
