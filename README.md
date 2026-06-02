@@ -132,6 +132,34 @@ refactor-tracker --tag=frontend                     # = form also accepted
 
 Skipped refactors keep their cache entries from previous runs, so partial runs don't break `--fail-on-regression` on the next full run.
 
+## Milestones
+
+Each refactor carries two timestamps:
+
+- `registeredAt` — when the tracker first saw the refactor.
+- `completedAt` — the first run that observed 100% progress. **Sticky**: it is never cleared, even if the count regresses afterwards.
+
+Milestones live in `.refactor-tracker-state.json` next to your config. Unlike the cache, **this file should be committed** so milestones travel with the codebase and are available in CI.
+
+### Backfilling `registeredAt`
+
+For refactors that predate adopting the tracker, set `registeredAt` in the YAML and it will win over whatever is in the state file:
+
+```yaml
+refactors:
+  - id: migrate-to-typescript
+    name: Migrate to TypeScript
+    registeredAt: 2026-03-12 # ISO date or full timestamp
+    detect: ...
+```
+
+### Flags
+
+- `--show-completed` — include refactors that have already reached 100% (hidden by default).
+- `--sort-by registered|completed|progress` — sort tasks by milestone or progress. Default is config order. `registered` is ascending (oldest first), `completed` is descending (most recent first), `progress` is ascending (least done first). Refactors with no value for the chosen key sort last.
+
+These are presentation concerns: they apply to `stdout`, `markdown`, `html`, and `custom` reporters. The `json` reporter always emits the full unfiltered, unsorted dataset.
+
 ## Reporters
 
 | Reporter   | Output                                                                                      |
