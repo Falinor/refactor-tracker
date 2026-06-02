@@ -1,20 +1,6 @@
 import type { Reporter, Report, TaskResult } from '../types.js';
 import { groupTasksByTag } from '../grouping.js';
-
-const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-function formatDate(iso: string, nowIso: string): string {
-  const d = new Date(iso);
-  const now = new Date(nowIso);
-  const sameYear = d.getUTCFullYear() === now.getUTCFullYear();
-  const day = d.getUTCDate();
-  const month = MONTH[d.getUTCMonth()];
-  return sameYear ? `${month} ${day}` : `${month} ${day}, ${d.getUTCFullYear()}`;
-}
-
-function ageDays(fromIso: string, toIso: string): number {
-  return Math.floor((Date.parse(toIso) - Date.parse(fromIso)) / 86_400_000);
-}
+import { formatDate, ageDays } from './format.js';
 
 function renderMilestoneLine(t: TaskResult, nowIso: string): string {
   const reg = t.registeredAt ? `registered ${formatDate(t.registeredAt, nowIso)}` : 'registered —';

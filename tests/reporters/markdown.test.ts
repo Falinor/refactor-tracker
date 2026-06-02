@@ -294,3 +294,48 @@ describe('formatMarkdown grouped by tag', () => {
     expect(md).not.toContain('Untagged');
   });
 });
+
+describe('markdown milestone columns', () => {
+  const baseTask = {
+    id: 'a',
+    name: 'A',
+    done: 4,
+    total: 10,
+    percentage: 40,
+    delta: null,
+    registeredAt: null as string | null,
+    completedAt: null as string | null,
+    durationDays: null as number | null,
+  };
+
+  it('adds Registered, Completed, and Duration columns', () => {
+    const md = formatMarkdown({
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [{ ...baseTask, registeredAt: '2026-03-12T00:00:00.000Z' }],
+    });
+    expect(md).toMatch(/Refactor\s*\|.*Registered\s*\|.*Completed\s*\|.*Duration/);
+    expect(md).toContain('Mar 12');
+    expect(md).toContain('—'); // completed and duration cells empty
+  });
+
+  it('renders duration for completed refactors', () => {
+    const md = formatMarkdown({
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: false,
+      tasks: [
+        {
+          ...baseTask,
+          done: 10,
+          percentage: 100,
+          registeredAt: '2026-04-01T00:00:00.000Z',
+          completedAt: '2026-05-30T00:00:00.000Z',
+          durationDays: 59,
+        },
+      ],
+    });
+    expect(md).toContain('Apr 1');
+    expect(md).toContain('May 30');
+    expect(md).toContain('59d');
+  });
+});
