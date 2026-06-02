@@ -51,8 +51,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
-      - run: pnpm build
+      - run: pnpm -r test
+      - run: pnpm -r build
 
   release:
     needs: [test, commitlint, quality]
@@ -60,21 +60,43 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write
       pull-requests: write
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: googleapis/release-please-action@v4
+        id: release
         with:
-          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      # The rest only runs after a Release PR is merged (i.e., new tags exist).
+      - uses: actions/checkout@v6
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
+
       - uses: pnpm/action-setup@v6
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
+
       - uses: actions/setup-node@v6
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
         with:
           node-version: 24
           cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - name: Release
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
+
+      - run: pnpm -r build
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
+
+      - name: Publish released packages
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm exec semantic-release
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          for path in $(echo '${{ steps.release.outputs.paths_released }}' | jq -r '.[]'); do
+            pkg=$(jq -r '.name' "$path/package.json")
+            echo "Publishing $pkg from $path"
+            pnpm --filter "$pkg" publish --no-git-checks --access public
+          done
