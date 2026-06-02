@@ -60,6 +60,16 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
       registeredAt = timestamp;
     }
 
+    let completedAt: string | null = stateEntry?.completedAt ?? null;
+    if (!completedAt && total > 0 && done === total) {
+      completedAt = timestamp;
+    }
+
+    const durationDays =
+      registeredAt && completedAt
+        ? Math.floor((Date.parse(completedAt) - Date.parse(registeredAt)) / 86_400_000)
+        : null;
+
     tasks.push({
       id: refactor.id,
       name: refactor.name,
@@ -71,8 +81,8 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
       delta,
       ...(items ? { items } : {}),
       registeredAt,
-      completedAt: null,
-      durationDays: null,
+      completedAt,
+      durationDays,
     });
     nextCache[refactor.id] = { done, total, timestamp };
   }

@@ -381,3 +381,88 @@ describe('registeredAt resolution', () => {
     });
   });
 });
+
+describe('completedAt and durationDays', () => {
+  const doneRun: CommandRunner = async (command) => {
+    const map: Record<string, string> = { d: '11', t: '11' };
+    return { stdout: map[command] ?? '0', exitCode: 0 };
+  };
+
+  it('stamps completedAt the first time a refactor reaches 100%', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      const report = await runEngine(config, {
+        cachePath,
+        statePath,
+        run: doneRun,
+        now: fixedNow,
+      });
+      expect(report.tasks[0].percentage).toBe(100);
+      expect(report.tasks[0].completedAt).toBe('2026-05-28T12:00:00.000Z');
+    });
+  });
+
+  it('keeps completedAt sticky across a regression below 100%', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      await writeState(statePath, {
+        abc: {
+          registeredAt: '2026-01-01T00:00:00.000Z',
+          completedAt: '2026-04-01T00:00:00.000Z',
+        },
+      });
+      // Default fake `run` returns done=4, total=11 (regression from 100%).
+      const report = await runEngine(config, { cachePath, statePath, run, now: fixedNow });
+      expect(report.tasks[0].percentage).toBe(36);
+      expect(report.tasks[0].completedAt).toBe('2026-04-01T00:00:00.000Z');
+    });
+  });
+
+  it('computes durationDays when both timestamps are present', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      await writeState(statePath, {
+        abc: { registeredAt: '2026-04-01T00:00:00.000Z' },
+      });
+      // fixedNow is 2026-05-28T12:00:00.000Z → 57 days later. Done=total triggers completedAt.
+      const report = await runEngine(config, {
+        cachePath,
+        statePath,
+        run: doneRun,
+        now: fixedNow,
+      });
+      expect(report.tasks[0].completedAt).toBe('2026-05-28T12:00:00.000Z');
+      expect(report.tasks[0].durationDays).toBe(57);
+    });
+  });
+
+  it('stamps completedAt but leaves durationDays null for a backfill case reaching 100%', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      await writeCache(cachePath, { abc: { done: 10, total: 11, timestamp: 'old' } });
+      const report = await runEngine(config, {
+        cachePath,
+        statePath,
+        run: doneRun,
+        now: fixedNow,
+      });
+      expect(report.tasks[0].registeredAt).toBeNull();
+      expect(report.tasks[0].completedAt).toBe('2026-05-28T12:00:00.000Z');
+      expect(report.tasks[0].durationDays).toBeNull();
+    });
+  });
+
+  it('leaves durationDays null while the refactor is still open', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      const report = await runEngine(config, { cachePath, statePath, run, now: fixedNow });
+      expect(report.tasks[0].completedAt).toBeNull();
+      expect(report.tasks[0].durationDays).toBeNull();
+    });
+  });
+});
