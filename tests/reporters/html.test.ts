@@ -401,6 +401,53 @@ describe('formatHtml grouped by tag', () => {
   });
 });
 
+describe('html milestone columns', () => {
+  const baseTask = {
+    id: 'a',
+    name: 'A',
+    done: 4,
+    total: 10,
+    percentage: 40,
+    delta: null,
+    registeredAt: null as string | null,
+    completedAt: null as string | null,
+    durationDays: null as number | null,
+  };
+
+  it('renders Registered, Completed, and Duration columns with tooltips', () => {
+    const html = formatHtml({
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          ...baseTask,
+          done: 10,
+          percentage: 100,
+          registeredAt: '2026-04-01T00:00:00.000Z',
+          completedAt: '2026-05-30T00:00:00.000Z',
+          durationDays: 59,
+        },
+      ],
+    });
+    expect(html).toContain('Registered');
+    expect(html).toContain('Completed');
+    expect(html).toContain('Duration');
+    expect(html).toContain('title="2026-04-01T00:00:00.000Z"');
+    expect(html).toContain('title="2026-05-30T00:00:00.000Z"');
+    expect(html).toContain('59d');
+  });
+
+  it('renders em dash for missing milestone fields', () => {
+    const html = formatHtml({
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [{ ...baseTask }],
+    });
+    // Accept literal em dash or HTML entities.
+    expect(html).toMatch(/—|&mdash;|&#8212;/);
+  });
+});
+
 describe('HtmlReporter', () => {
   it('writes html to the output file, creating parent directories', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'rt-html-'));

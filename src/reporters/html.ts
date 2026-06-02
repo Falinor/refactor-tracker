@@ -3,6 +3,7 @@ import path from 'node:path';
 import { Eta } from 'eta';
 import type { Report, Reporter } from '../types.js';
 import { groupTasksByTag } from '../grouping.js';
+import { formatDate } from './format.js';
 
 const TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
@@ -32,6 +33,10 @@ const TEMPLATE = `<!DOCTYPE html>
     details.items { margin-top: 0.75rem; }
     details.items > summary { cursor: pointer; color: #444; font-size: 0.9em; }
     details.items > ul { margin: 0.5rem 0 0; padding-left: 1.25rem; color: #444; font-size: 0.9em; }
+    dl.milestones { display: flex; flex-wrap: wrap; gap: 0 1.25rem; margin: 0.5rem 0 0; color: #555; font-size: 0.85em; }
+    dl.milestones > div { display: flex; gap: 0.35rem; }
+    dl.milestones dt { font-weight: 600; color: #444; margin: 0; }
+    dl.milestones dd { margin: 0; font-variant-numeric: tabular-nums; }
     <% if (!it.flat) { %>.tag-group { margin-top: 1.5rem; }<% } %>
   </style>
 </head>
@@ -73,6 +78,32 @@ const TEMPLATE = `<!DOCTYPE html>
           <div class="bar-fill"
                style="width: <%= task.percentage %>%; background: <%= task.barColor %>"></div>
         </div>
+        <dl class="milestones">
+          <div>
+            <dt>Registered</dt>
+            <% if (task.registered) { %>
+            <dd title="<%= task.registered.iso %>"><%= task.registered.display %></dd>
+            <% } else { %>
+            <dd>—</dd>
+            <% } %>
+          </div>
+          <div>
+            <dt>Completed</dt>
+            <% if (task.completed) { %>
+            <dd title="<%= task.completed.iso %>"><%= task.completed.display %></dd>
+            <% } else { %>
+            <dd>—</dd>
+            <% } %>
+          </div>
+          <div>
+            <dt>Duration</dt>
+            <% if (task.duration) { %>
+            <dd><%= task.duration %></dd>
+            <% } else { %>
+            <dd>—</dd>
+            <% } %>
+          </div>
+        </dl>
         <% if (task.items) { %>
         <details class="items">
           <summary><%= task.items.length %> remaining</summary>
@@ -108,6 +139,32 @@ const TEMPLATE = `<!DOCTYPE html>
             <div class="bar-fill"
                  style="width: <%= task.percentage %>%; background: <%= task.barColor %>"></div>
           </div>
+          <dl class="milestones">
+            <div>
+              <dt>Registered</dt>
+              <% if (task.registered) { %>
+              <dd title="<%= task.registered.iso %>"><%= task.registered.display %></dd>
+              <% } else { %>
+              <dd>—</dd>
+              <% } %>
+            </div>
+            <div>
+              <dt>Completed</dt>
+              <% if (task.completed) { %>
+              <dd title="<%= task.completed.iso %>"><%= task.completed.display %></dd>
+              <% } else { %>
+              <dd>—</dd>
+              <% } %>
+            </div>
+            <div>
+              <dt>Duration</dt>
+              <% if (task.duration) { %>
+              <dd><%= task.duration %></dd>
+              <% } else { %>
+              <dd>—</dd>
+              <% } %>
+            </div>
+          </dl>
         </li>
         <% }) %>
       </ul>
@@ -137,6 +194,11 @@ function buildDelta(delta: number | null): HtmlDeltaView | null {
   return { text: `−${-delta}`, kind: 'down' };
 }
 
+interface HtmlMilestoneView {
+  iso: string;
+  display: string;
+}
+
 interface HtmlTaskView {
   name: string;
   description: string | null;
@@ -146,6 +208,9 @@ interface HtmlTaskView {
   barColor: string;
   delta: HtmlDeltaView | null;
   items: string[] | null;
+  registered: HtmlMilestoneView | null;
+  completed: HtmlMilestoneView | null;
+  duration: string | null;
 }
 
 interface HtmlGroupView {
@@ -173,7 +238,7 @@ function formatTimestamp(iso: string): string {
   return TIMESTAMP_FORMAT.format(new Date(iso));
 }
 
-function toTaskView(t: Report['tasks'][number]): HtmlTaskView {
+function toTaskView(t: Report['tasks'][number], nowIso: string): HtmlTaskView {
   return {
     name: t.name,
     description: t.description ?? null,
@@ -183,6 +248,13 @@ function toTaskView(t: Report['tasks'][number]): HtmlTaskView {
     barColor: barColor(t.percentage),
     delta: buildDelta(t.delta),
     items: t.items && t.items.length > 0 ? t.items : null,
+    registered: t.registeredAt
+      ? { iso: t.registeredAt, display: formatDate(t.registeredAt, nowIso) }
+      : null,
+    completed: t.completedAt
+      ? { iso: t.completedAt, display: formatDate(t.completedAt, nowIso) }
+      : null,
+    duration: t.durationDays !== null ? `${t.durationDays}d` : null,
   };
 }
 
@@ -192,9 +264,10 @@ function buildView(report: Report): HtmlView {
   const overallPercentage = grandTotal === 0 ? 0 : Math.round((grandDone / grandTotal) * 100);
   const taskGroups = groupTasksByTag(report.tasks);
   const flat = taskGroups.length === 1 && taskGroups[0].tag === null;
+  const nowIso = report.timestamp;
   const groups: HtmlGroupView[] = taskGroups.map((g) => ({
     heading: g.tag === null ? 'Untagged' : g.tag,
-    tasks: g.tasks.map(toTaskView),
+    tasks: g.tasks.map((t) => toTaskView(t, nowIso)),
   }));
   return {
     timestampIso: report.timestamp,
