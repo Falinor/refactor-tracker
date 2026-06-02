@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { runEngine } from '../src/engine.js';
 import { writeCache, readCache } from '../src/cache.js';
-import { writeState } from '../src/state.js';
+import { writeState, readState } from '../src/state.js';
 import type { CommandRunner } from '../src/detect.js';
 import type { Config } from '../src/config.js';
 
@@ -463,6 +463,93 @@ describe('completedAt and durationDays', () => {
       const report = await runEngine(config, { cachePath, statePath, run, now: fixedNow });
       expect(report.tasks[0].completedAt).toBeNull();
       expect(report.tasks[0].durationDays).toBeNull();
+    });
+  });
+});
+
+describe('state file write', () => {
+  it('writes only meaningful entries (skips refactors with no milestones)', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      // Refactor exists in cache but not in state, no override, not at 100% → no milestones.
+      await writeCache(cachePath, { abc: { done: 1, total: 11, timestamp: 'old' } });
+      await runEngine(config, { cachePath, statePath, run, now: fixedNow });
+      expect(await readState(statePath)).toEqual({});
+    });
+  });
+
+  it('writes state for new refactors with registeredAt', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      await runEngine(config, { cachePath, statePath, run, now: fixedNow });
+      expect(await readState(statePath)).toEqual({
+        abc: { registeredAt: '2026-05-28T12:00:00.000Z' },
+      });
+    });
+  });
+
+  it('writes both registeredAt and completedAt when a refactor reaches 100%', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      const doneRun: CommandRunner = async (command) => {
+        const map: Record<string, string> = { d: '11', t: '11' };
+        return { stdout: map[command] ?? '0', exitCode: 0 };
+      };
+      await runEngine(config, { cachePath, statePath, run: doneRun, now: fixedNow });
+      expect(await readState(statePath)).toEqual({
+        abc: {
+          registeredAt: '2026-05-28T12:00:00.000Z',
+          completedAt: '2026-05-28T12:00:00.000Z',
+        },
+      });
+    });
+  });
+
+  it('preserves state for refactors excluded by tagFilter', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      await writeState(statePath, {
+        kept: { registeredAt: '2026-01-01T00:00:00.000Z' },
+      });
+      const multi: Config = {
+        refactors: [
+          {
+            id: 'kept',
+            name: 'Kept',
+            tags: ['backend'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+          {
+            id: 'run',
+            name: 'Run',
+            tags: ['frontend'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+        ],
+      };
+      await runEngine(multi, {
+        cachePath,
+        statePath,
+        run,
+        now: fixedNow,
+        tagFilter: ['frontend'],
+      });
+      const written = await readState(statePath);
+      expect(written.kept).toEqual({ registeredAt: '2026-01-01T00:00:00.000Z' });
+      expect(written.run).toEqual({ registeredAt: '2026-05-28T12:00:00.000Z' });
+    });
+  });
+
+  it('does not write the state file in dry-run mode', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      await runEngine(config, { cachePath, statePath, run, now: fixedNow, dryRun: true });
+      expect(await readState(statePath)).toEqual({});
     });
   });
 });

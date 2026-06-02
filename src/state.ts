@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 export interface StateEntry {
-  registeredAt: string; // ISO-8601
+  registeredAt?: string; // ISO-8601; absent for pre-upgrade refactors that reach 100%
   completedAt?: string; // ISO-8601, sticky once set
 }
 

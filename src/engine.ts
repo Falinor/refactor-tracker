@@ -3,7 +3,7 @@ import type { Report, TaskResult } from './types.js';
 import { resolveDetection, resolveList, type CommandRunner } from './detect.js';
 import { runCommand } from './runner.js';
 import { readCache, writeCache, type Cache } from './cache.js';
-import { readState } from './state.js';
+import { readState, writeState, type State, type StateEntry } from './state.js';
 
 export interface EngineOptions {
   cachePath: string;
@@ -36,6 +36,7 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
   // skipped refactors keep their entries (otherwise --fail-on-regression
   // on the next full run would see them as first-time, delta null).
   const nextCache: Cache = filterActive ? { ...cache } : {};
+  const nextState: State = filterActive ? { ...state } : {};
   let hasChanges = false;
 
   for (const refactor of filtered) {
@@ -85,8 +86,16 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
       durationDays,
     });
     nextCache[refactor.id] = { done, total, timestamp };
+
+    if (registeredAt !== null || completedAt !== null) {
+      nextState[refactor.id] = {
+        ...(registeredAt !== null ? { registeredAt } : {}),
+        ...(completedAt !== null ? { completedAt } : {}),
+      } as StateEntry;
+    }
   }
 
   if (!options.dryRun) await writeCache(options.cachePath, nextCache);
+  if (!options.dryRun) await writeState(options.statePath, nextState);
   return { tasks, timestamp, hasChanges };
 }
