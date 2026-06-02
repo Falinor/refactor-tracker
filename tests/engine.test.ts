@@ -39,7 +39,17 @@ describe('runEngine', () => {
       const cachePath = path.join(dir, 'cache.json');
       const report = await runEngine(config, { cachePath, run, now: fixedNow });
       expect(report.tasks).toEqual([
-        { id: 'abc', name: 'Lazy routes', done: 4, total: 11, percentage: 36, delta: null },
+        {
+          id: 'abc',
+          name: 'Lazy routes',
+          done: 4,
+          total: 11,
+          percentage: 36,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
       ]);
       expect(report.hasChanges).toBe(true);
       expect(report.timestamp).toBe('2026-05-28T12:00:00.000Z');

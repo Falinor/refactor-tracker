@@ -9,8 +9,28 @@ const report: Report = {
   timestamp: '2026-05-28T12:00:00.000Z',
   hasChanges: true,
   tasks: [
-    { id: 'a', name: 'Lazy routes', done: 4, total: 11, percentage: 36, delta: 3 },
-    { id: 'b', name: 'Drop legacy <Modal>', done: 0, total: 5, percentage: 0, delta: null },
+    {
+      id: 'a',
+      name: 'Lazy routes',
+      done: 4,
+      total: 11,
+      percentage: 36,
+      delta: 3,
+      registeredAt: null,
+      completedAt: null,
+      durationDays: null,
+    },
+    {
+      id: 'b',
+      name: 'Drop legacy <Modal>',
+      done: 0,
+      total: 5,
+      percentage: 0,
+      delta: null,
+      registeredAt: null,
+      completedAt: null,
+      durationDays: null,
+    },
   ],
 };
 
@@ -76,7 +96,19 @@ describe('formatHtml', () => {
     const zeroReport: Report = {
       timestamp: '2026-05-28T12:00:00.000Z',
       hasChanges: false,
-      tasks: [{ id: 'a', name: 'Stable', done: 4, total: 10, percentage: 40, delta: 0 }],
+      tasks: [
+        {
+          id: 'a',
+          name: 'Stable',
+          done: 4,
+          total: 10,
+          percentage: 40,
+          delta: 0,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
+      ],
     };
     const html = formatHtml(zeroReport);
     expect(html).not.toContain('class="delta');
@@ -86,7 +118,19 @@ describe('formatHtml', () => {
     const regressionReport: Report = {
       timestamp: '2026-05-28T12:00:00.000Z',
       hasChanges: true,
-      tasks: [{ id: 'a', name: 'Backslid', done: 3, total: 10, percentage: 30, delta: -2 }],
+      tasks: [
+        {
+          id: 'a',
+          name: 'Backslid',
+          done: 3,
+          total: 10,
+          percentage: 30,
+          delta: -2,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
+      ],
     };
     const html = formatHtml(regressionReport);
     expect(html).toContain('<span class="delta delta-down">−2</span>');
@@ -114,7 +158,19 @@ describe('formatHtml', () => {
     const emptyReport: Report = {
       timestamp: '2026-05-28T12:00:00.000Z',
       hasChanges: false,
-      tasks: [{ id: 'a', name: 'Empty', done: 0, total: 0, percentage: 0, delta: null }],
+      tasks: [
+        {
+          id: 'a',
+          name: 'Empty',
+          done: 0,
+          total: 0,
+          percentage: 0,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
+      ],
     };
     const html = formatHtml(emptyReport);
     expect(html).toContain('0 / 0');
@@ -141,6 +197,9 @@ describe('formatHtml', () => {
           total: 11,
           percentage: 36,
           delta: 3,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
         },
       ],
     };
@@ -167,6 +226,9 @@ describe('formatHtml', () => {
           total: 2,
           percentage: 50,
           delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
         },
       ],
     };
@@ -178,7 +240,19 @@ describe('formatHtml', () => {
     const ampReport: Report = {
       timestamp: '2026-05-28T12:00:00.000Z',
       hasChanges: false,
-      tasks: [{ id: 'a', name: 'Foo & Bar', done: 1, total: 2, percentage: 50, delta: null }],
+      tasks: [
+        {
+          id: 'a',
+          name: 'Foo & Bar',
+          done: 1,
+          total: 2,
+          percentage: 50,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
+      ],
     };
     const html = formatHtml(ampReport);
     expect(html).toContain('Foo &amp; Bar');
@@ -200,6 +274,9 @@ describe('formatHtml with items', () => {
           percentage: 33,
           delta: null,
           items: ['src/foo.ts', 'src/bar.ts'],
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
         },
       ],
     };
@@ -228,6 +305,9 @@ describe('formatHtml with items', () => {
           percentage: 0,
           delta: null,
           items: ['<Component />'],
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
         },
       ],
     };
@@ -243,8 +323,30 @@ describe('formatHtml grouped by tag', () => {
       timestamp: '2026-05-28T12:00:00.000Z',
       hasChanges: true,
       tasks: [
-        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
-        { id: 'b', name: 'BE', tags: ['backend'], done: 0, total: 3, percentage: 0, delta: null },
+        {
+          id: 'a',
+          name: 'FE',
+          tags: ['frontend'],
+          done: 1,
+          total: 2,
+          percentage: 50,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
+        {
+          id: 'b',
+          name: 'BE',
+          tags: ['backend'],
+          done: 0,
+          total: 3,
+          percentage: 0,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
       ],
     };
     const html = formatHtml(r);
@@ -261,8 +363,29 @@ describe('formatHtml grouped by tag', () => {
       timestamp: '2026-05-28T12:00:00.000Z',
       hasChanges: true,
       tasks: [
-        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
-        { id: 'b', name: 'Loose', done: 0, total: 3, percentage: 0, delta: null },
+        {
+          id: 'a',
+          name: 'FE',
+          tags: ['frontend'],
+          done: 1,
+          total: 2,
+          percentage: 50,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
+        {
+          id: 'b',
+          name: 'Loose',
+          done: 0,
+          total: 3,
+          percentage: 0,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
       ],
     };
     const html = formatHtml(r);

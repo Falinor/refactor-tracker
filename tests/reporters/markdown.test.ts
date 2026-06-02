@@ -8,7 +8,19 @@ import type { Report } from '../../src/types.js';
 const report: Report = {
   timestamp: '2026-05-28T12:00:00.000Z',
   hasChanges: true,
-  tasks: [{ id: 'a', name: 'Lazy routes', done: 4, total: 11, percentage: 36, delta: 3 }],
+  tasks: [
+    {
+      id: 'a',
+      name: 'Lazy routes',
+      done: 4,
+      total: 11,
+      percentage: 36,
+      delta: 3,
+      registeredAt: null,
+      completedAt: null,
+      durationDays: null,
+    },
+  ],
 };
 
 describe('formatMarkdown', () => {
@@ -33,8 +45,21 @@ describe('formatMarkdown with descriptions', () => {
           total: 11,
           percentage: 36,
           delta: 3,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
         },
-        { id: 'b', name: 'No desc', done: 0, total: 5, percentage: 0, delta: null },
+        {
+          id: 'b',
+          name: 'No desc',
+          done: 0,
+          total: 5,
+          percentage: 0,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
       ],
     };
     const md = formatMarkdown(withDesc);
@@ -63,6 +88,9 @@ describe('formatMarkdown with descriptions', () => {
           total: 2,
           percentage: 50,
           delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
         },
       ],
     };
@@ -98,6 +126,9 @@ describe('formatMarkdown with items', () => {
           percentage: 33,
           delta: null,
           items: ['src/foo.ts', 'src/bar.ts'],
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
         },
       ],
     };
@@ -128,8 +159,22 @@ describe('formatMarkdown with items', () => {
           percentage: 0,
           delta: null,
           items: ['src/a.ts'],
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
         },
-        { id: 'b', name: 'BE', tags: ['backend'], done: 0, total: 2, percentage: 0, delta: null },
+        {
+          id: 'b',
+          name: 'BE',
+          tags: ['backend'],
+          done: 0,
+          total: 2,
+          percentage: 0,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
       ],
     };
     const md = formatMarkdown(r);
@@ -150,8 +195,30 @@ describe('formatMarkdown grouped by tag', () => {
       timestamp: '2026-05-28T12:00:00.000Z',
       hasChanges: true,
       tasks: [
-        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
-        { id: 'b', name: 'BE', tags: ['backend'], done: 0, total: 3, percentage: 0, delta: null },
+        {
+          id: 'a',
+          name: 'FE',
+          tags: ['frontend'],
+          done: 1,
+          total: 2,
+          percentage: 50,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
+        {
+          id: 'b',
+          name: 'BE',
+          tags: ['backend'],
+          done: 0,
+          total: 3,
+          percentage: 0,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
       ],
     };
     const md = formatMarkdown(r);
@@ -167,7 +234,18 @@ describe('formatMarkdown grouped by tag', () => {
       timestamp: '2026-05-28T12:00:00.000Z',
       hasChanges: true,
       tasks: [
-        { id: 'a', name: 'Both', tags: ['x', 'y'], done: 1, total: 2, percentage: 50, delta: null },
+        {
+          id: 'a',
+          name: 'Both',
+          tags: ['x', 'y'],
+          done: 1,
+          total: 2,
+          percentage: 50,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
       ],
     };
     const md = formatMarkdown(r);
@@ -180,8 +258,29 @@ describe('formatMarkdown grouped by tag', () => {
       timestamp: '2026-05-28T12:00:00.000Z',
       hasChanges: true,
       tasks: [
-        { id: 'a', name: 'FE', tags: ['frontend'], done: 1, total: 2, percentage: 50, delta: null },
-        { id: 'b', name: 'Loose', done: 0, total: 3, percentage: 0, delta: null },
+        {
+          id: 'a',
+          name: 'FE',
+          tags: ['frontend'],
+          done: 1,
+          total: 2,
+          percentage: 50,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
+        {
+          id: 'b',
+          name: 'Loose',
+          done: 0,
+          total: 3,
+          percentage: 0,
+          delta: null,
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
       ],
     };
     const md = formatMarkdown(r);

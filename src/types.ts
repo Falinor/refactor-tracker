@@ -8,6 +8,9 @@ export interface TaskResult {
   percentage: number; // 0–100, rounded
   delta: number | null; // change in `done` vs previous run; null on first run
   items?: string[]; // present iff list command ran and returned items
+  registeredAt: string | null; // ISO-8601; null only for pre-upgrade refactors without YAML override
+  completedAt: string | null; // ISO-8601; null until first 100%
+  durationDays: number | null; // integer days, computed when both timestamps exist
 }
 
 export interface Report {

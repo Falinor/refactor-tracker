@@ -55,6 +55,9 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
       percentage,
       delta,
       ...(items ? { items } : {}),
+      registeredAt: null,
+      completedAt: null,
+      durationDays: null,
     });
     nextCache[refactor.id] = { done, total, timestamp };
   }

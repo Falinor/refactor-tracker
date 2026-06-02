@@ -8,7 +8,19 @@ import type { Report } from '../../src/types.js';
 const report: Report = {
   timestamp: '2026-05-28T12:00:00.000Z',
   hasChanges: true,
-  tasks: [{ id: 'a', name: 'Lazy routes', done: 4, total: 11, percentage: 36, delta: 3 }],
+  tasks: [
+    {
+      id: 'a',
+      name: 'Lazy routes',
+      done: 4,
+      total: 11,
+      percentage: 36,
+      delta: 3,
+      registeredAt: null,
+      completedAt: null,
+      durationDays: null,
+    },
+  ],
 };
 
 describe('JsonReporter', () => {
@@ -40,6 +52,9 @@ describe('JsonReporter', () => {
             percentage: 33,
             delta: null,
             items: ['src/foo.ts', 'src/bar.ts'],
+            registeredAt: null,
+            completedAt: null,
+            durationDays: null,
           },
         ],
       };

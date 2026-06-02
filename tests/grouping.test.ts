@@ -3,7 +3,18 @@ import { groupTasksByTag } from '../src/grouping.js';
 import type { TaskResult } from '../src/types.js';
 
 function task(id: string, tags?: string[]): TaskResult {
-  return { id, name: id, done: 0, total: 1, percentage: 0, delta: null, ...(tags ? { tags } : {}) };
+  return {
+    id,
+    name: id,
+    done: 0,
+    total: 1,
+    percentage: 0,
+    delta: null,
+    ...(tags ? { tags } : {}),
+    registeredAt: null,
+    completedAt: null,
+    durationDays: null,
+  };
 }
 
 describe('groupTasksByTag', () => {
