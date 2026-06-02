@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtemp, rm, copyFile, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, rm, copyFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,6 +39,11 @@ describe('execute', () => {
     });
     const code = await execute({ config: configPath, dryRun: true, failOnRegression: true });
     expect(code).toBe(1);
+  });
+
+  it('writes a state file next to the config after a run', async () => {
+    await execute({ config: configPath, dryRun: false, failOnRegression: false });
+    await expect(access(path.join(dir, '.refactor-tracker-state.json'))).resolves.toBeUndefined();
   });
 });
 
