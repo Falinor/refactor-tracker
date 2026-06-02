@@ -107,15 +107,30 @@ export const main = defineCommand({
       description: 'Include refactors that have already reached 100% in reporter output',
       default: false,
     },
+    'sort-by': {
+      type: 'string',
+      description:
+        'Sort tasks: registered (oldest first), completed (most recent first), or progress (least done first)',
+      valueHint: 'registered|completed|progress',
+    },
   },
   async run({ args, rawArgs }) {
     const tags = collectTagFlags(rawArgs);
+    const sortBy = args['sort-by'] as string | undefined;
+    if (sortBy !== undefined && !['registered', 'completed', 'progress'].includes(sortBy)) {
+      console.error(
+        `Invalid --sort-by value: ${sortBy}. Expected: registered | completed | progress.`,
+      );
+      process.exitCode = 1;
+      return 1;
+    }
     const code = await execute({
       config: args.config,
       dryRun: args['dry-run'],
       failOnRegression: args['fail-on-regression'],
       tags: tags.length > 0 ? tags : undefined,
       showCompleted: args['show-completed'],
+      sortBy: sortBy as ExecuteOptions['sortBy'] | undefined,
     });
     if (code !== 0) process.exitCode = code;
     return code;

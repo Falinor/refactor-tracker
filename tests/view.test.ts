@@ -47,3 +47,48 @@ describe('applyView — filter completed', () => {
     expect(out.hasChanges).toBe(r.hasChanges);
   });
 });
+
+describe('applyView — sort', () => {
+  it('sorts by registered ascending, nulls last', () => {
+    const r = report([
+      task({ id: 'a', registeredAt: '2026-03-01T00:00:00.000Z' }),
+      task({ id: 'b', registeredAt: '2026-01-15T00:00:00.000Z' }),
+      task({ id: 'c', registeredAt: null }),
+    ]);
+    const out = applyView(r, { showCompleted: true, sortBy: 'registered' });
+    expect(out.tasks.map((t) => t.id)).toEqual(['b', 'a', 'c']);
+  });
+
+  it('sorts by completed descending, nulls last', () => {
+    const r = report([
+      task({ id: 'a', completedAt: '2026-04-01T00:00:00.000Z' }),
+      task({ id: 'b', completedAt: '2026-05-30T00:00:00.000Z' }),
+      task({ id: 'c', completedAt: null }),
+    ]);
+    const out = applyView(r, { showCompleted: true, sortBy: 'completed' });
+    expect(out.tasks.map((t) => t.id)).toEqual(['b', 'a', 'c']);
+  });
+
+  it('sorts by progress ascending', () => {
+    const r = report([
+      task({ id: 'a', percentage: 80 }),
+      task({ id: 'b', percentage: 20 }),
+      task({ id: 'c', percentage: 50 }),
+    ]);
+    const out = applyView(r, { showCompleted: true, sortBy: 'progress' });
+    expect(out.tasks.map((t) => t.id)).toEqual(['b', 'c', 'a']);
+  });
+
+  it('applies filter before sort', () => {
+    const r = report([
+      task({ id: 'open-late', registeredAt: '2026-04-01T00:00:00.000Z' }),
+      task({
+        id: 'done-early',
+        registeredAt: '2026-01-01T00:00:00.000Z',
+        completedAt: '2026-02-01T00:00:00.000Z',
+      }),
+    ]);
+    const out = applyView(r, { showCompleted: false, sortBy: 'registered' });
+    expect(out.tasks.map((t) => t.id)).toEqual(['open-late']);
+  });
+});

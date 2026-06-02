@@ -116,3 +116,19 @@ describe('--show-completed', () => {
     expect(result).toBe(0);
   });
 });
+
+describe('--sort-by', () => {
+  it('accepts a valid sort key', async () => {
+    const { result } = await runCommand(main, {
+      rawArgs: ['--config', configPath, '--sort-by', 'registered', '--dry-run'],
+    });
+    expect(result).toBe(0);
+  });
+
+  it('rejects an invalid sort key with exit 1', async () => {
+    const { result } = await runCommand(main, {
+      rawArgs: ['--config', configPath, '--sort-by', 'bogus', '--dry-run'],
+    });
+    expect(result).toBe(1);
+  });
+});
