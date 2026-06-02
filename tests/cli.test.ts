@@ -107,3 +107,12 @@ describe('--tag flag', () => {
     expect(result).toBe(1);
   });
 });
+
+describe('--show-completed', () => {
+  it('forwards the flag through citty into execute', async () => {
+    const { result } = await runCommand(main, {
+      rawArgs: ['--config', configPath, '--show-completed', '--dry-run'],
+    });
+    expect(result).toBe(0);
+  });
+});

@@ -13,6 +13,7 @@ export default {
         'runner',
         'cache',
         'state',
+        'view',
         'grouping',
         // Reporters
         'reporters',

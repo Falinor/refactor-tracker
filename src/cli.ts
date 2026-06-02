@@ -5,12 +5,15 @@ import { defineCommand, runMain } from 'citty';
 import { loadConfig } from './config.js';
 import { runEngine } from './engine.js';
 import { createReporters } from './reporters/index.js';
+import { applyView } from './view.js';
 
 export interface ExecuteOptions {
   config: string;
   dryRun: boolean;
   failOnRegression: boolean;
   tags?: string[];
+  showCompleted?: boolean;
+  sortBy?: 'registered' | 'completed' | 'progress';
 }
 
 export async function execute(options: ExecuteOptions): Promise<number> {
@@ -35,8 +38,16 @@ export async function execute(options: ExecuteOptions): Promise<number> {
   if (options.dryRun) {
     console.log(JSON.stringify(report, null, 2));
   } else {
-    const reporters = await createReporters(config.reporters, baseDir);
-    for (const reporter of reporters) await reporter.report(report);
+    const reporterConfigs = config.reporters ?? [{ type: 'stdout' }];
+    const reporters = await createReporters(reporterConfigs, baseDir);
+    const filtered = applyView(report, {
+      showCompleted: !!options.showCompleted,
+      sortBy: options.sortBy,
+    });
+    for (let i = 0; i < reporters.length; i++) {
+      const isJson = reporterConfigs[i].type === 'json';
+      await reporters[i].report(isJson ? report : filtered);
+    }
   }
 
   if (options.failOnRegression && report.tasks.some((t) => t.delta !== null && t.delta < 0)) {
@@ -91,6 +102,11 @@ export const main = defineCommand({
       description: 'Filter refactors by tag (repeatable, OR semantics: --tag a --tag b)',
       valueHint: 'name',
     },
+    'show-completed': {
+      type: 'boolean',
+      description: 'Include refactors that have already reached 100% in reporter output',
+      default: false,
+    },
   },
   async run({ args, rawArgs }) {
     const tags = collectTagFlags(rawArgs);
@@ -99,6 +115,7 @@ export const main = defineCommand({
       dryRun: args['dry-run'],
       failOnRegression: args['fail-on-regression'],
       tags: tags.length > 0 ? tags : undefined,
+      showCompleted: args['show-completed'],
     });
     if (code !== 0) process.exitCode = code;
     return code;
