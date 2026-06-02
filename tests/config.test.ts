@@ -128,6 +128,60 @@ refactors:
   });
 });
 
+describe('registeredAt', () => {
+  it('accepts a bare ISO date and normalizes it to a full timestamp', () => {
+    const config = parseConfig(`
+refactors:
+  - id: a
+    name: A
+    registeredAt: 2026-03-12
+    detect:
+      done: { command: "echo 1" }
+      total: { command: "echo 2" }
+`);
+    expect(config.refactors[0].registeredAt).toBe('2026-03-12T00:00:00.000Z');
+  });
+
+  it('accepts a full ISO timestamp unchanged', () => {
+    const config = parseConfig(`
+refactors:
+  - id: a
+    name: A
+    registeredAt: 2026-03-12T10:00:00.000Z
+    detect:
+      done: { command: "echo 1" }
+      total: { command: "echo 2" }
+`);
+    expect(config.refactors[0].registeredAt).toBe('2026-03-12T10:00:00.000Z');
+  });
+
+  it('rejects malformed date strings', () => {
+    expect(() =>
+      parseConfig(`
+refactors:
+  - id: a
+    name: A
+    registeredAt: not-a-date
+    detect:
+      done: { command: "echo 1" }
+      total: { command: "echo 2" }
+`),
+    ).toThrow();
+  });
+
+  it('treats registeredAt as optional', () => {
+    const config = parseConfig(`
+refactors:
+  - id: a
+    name: A
+    detect:
+      done: { command: "echo 1" }
+      total: { command: "echo 2" }
+`);
+    expect(config.refactors[0].registeredAt).toBeUndefined();
+  });
+});
+
 describe('expandEnv', () => {
   beforeEach(() => {
     process.env.TEST_TOKEN = 'secret-123';

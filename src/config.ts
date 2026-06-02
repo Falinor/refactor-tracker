@@ -22,11 +22,31 @@ const detectCounts = z
 
 const detectSchema = z.union([detectBinary, detectCounts]);
 
+const isoDateOrTimestampSchema = z.union([z.string(), z.date()]).transform((v, ctx) => {
+  // YAML parses bare ISO dates (YYYY-MM-DD) into Date objects.
+  if (v instanceof Date) {
+    if (Number.isNaN(v.getTime())) {
+      ctx.addIssue({ code: 'custom', message: 'Invalid date' });
+      return z.NEVER;
+    }
+    return v.toISOString();
+  }
+  // String form: accept "YYYY-MM-DD" or a full ISO-8601 timestamp.
+  const bareDate = /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const parsed = new Date(bareDate ? `${v}T00:00:00.000Z` : v);
+  if (Number.isNaN(parsed.getTime())) {
+    ctx.addIssue({ code: 'custom', message: 'Invalid ISO date or timestamp' });
+    return z.NEVER;
+  }
+  return parsed.toISOString();
+});
+
 const refactorSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  registeredAt: isoDateOrTimestampSchema.optional(),
   detect: detectSchema,
 });
 
