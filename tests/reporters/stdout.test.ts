@@ -157,3 +157,57 @@ describe('formatTable ignores items', () => {
     expect(out).not.toContain('src/bar.ts');
   });
 });
+
+describe('stdout milestone rendering', () => {
+  const baseTask = {
+    id: 'a',
+    name: 'A',
+    done: 4,
+    total: 10,
+    percentage: 40,
+    delta: null,
+    registeredAt: null as string | null,
+    completedAt: null as string | null,
+    durationDays: null as number | null,
+  };
+
+  it('renders an open task with registered date and age', () => {
+    const out = formatTable({
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [{ ...baseTask, registeredAt: '2026-03-12T00:00:00.000Z' }],
+    });
+    expect(out).toContain('registered Mar 12');
+    expect(out).toContain('77d open');
+  });
+
+  it('renders age unknown when registeredAt is null', () => {
+    const out = formatTable({
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [{ ...baseTask }],
+    });
+    expect(out).toContain('registered —');
+    expect(out).toContain('age unknown');
+  });
+
+  it('renders completed line with duration', () => {
+    const out = formatTable({
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: false,
+      tasks: [
+        {
+          ...baseTask,
+          done: 10,
+          percentage: 100,
+          registeredAt: '2026-04-01T00:00:00.000Z',
+          completedAt: '2026-05-30T00:00:00.000Z',
+          durationDays: 59,
+        },
+      ],
+    });
+    expect(out).toContain('registered Apr 1');
+    expect(out).toContain('completed May 30');
+    expect(out).toContain('59d');
+  });
+});
