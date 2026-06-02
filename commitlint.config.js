@@ -12,6 +12,7 @@ export default {
         'detect',
         'runner',
         'cache',
+        'state',
         'grouping',
         // Reporters
         'reporters',
