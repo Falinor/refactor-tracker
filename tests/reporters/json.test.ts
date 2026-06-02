@@ -65,4 +65,35 @@ describe('JsonReporter', () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  it('passes registeredAt, completedAt, and durationDays through to the JSON output', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'rt-json-'));
+    try {
+      const out = path.join(dir, 'report.json');
+      const withMilestones: Report = {
+        timestamp: '2026-05-28T12:00:00.000Z',
+        hasChanges: true,
+        tasks: [
+          {
+            id: 'a',
+            name: 'Lazy routes',
+            done: 2,
+            total: 5,
+            percentage: 40,
+            delta: null,
+            registeredAt: '2026-03-12T00:00:00.000Z',
+            completedAt: null,
+            durationDays: null,
+          },
+        ],
+      };
+      await new JsonReporter(out).report(withMilestones);
+      const parsed = JSON.parse(await readFile(out, 'utf8'));
+      expect(parsed.tasks[0].registeredAt).toBe('2026-03-12T00:00:00.000Z');
+      expect(parsed.tasks[0].completedAt).toBeNull();
+      expect(parsed.tasks[0].durationDays).toBeNull();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
 });
