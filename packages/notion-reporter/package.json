@@ -1,0 +1,35 @@
+{
+  "name": "refactor-tracker-notion-reporter",
+  "version": "0.0.0",
+  "description": "Notion reporter for refactor-tracker — syncs each snapshot to a Notion database.",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run --passWithNoTests",
+    "dev": "vitest"
+  },
+  "dependencies": {
+    "@notionhq/client": "5.22.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "25.9.1",
+    "tsdown": "0.22.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.7"
+  },
+  "peerDependencies": {
+    "refactor-tracker": ">=0.2.0"
+  }
+}
