@@ -92,8 +92,6 @@ jobs:
 
       - name: Publish released packages
         if: ${{ steps.release.outputs.releases_created == 'true' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           for path in $(echo '${{ steps.release.outputs.paths_released }}' | jq -r '.[]'); do
             pkg=$(jq -r '.name' "$path/package.json")
