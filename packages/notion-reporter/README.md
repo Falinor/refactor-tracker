@@ -13,28 +13,29 @@ pnpm add -D refactor-tracker refactor-tracker-notion-reporter
 1. **Create an integration** at https://www.notion.so/profile/integrations and copy the internal integration secret.
 2. **Create a database** in the Notion page where the report should live. Add these properties (exact names, exact types):
 
-   | Property | Type |
-   |---|---|
-   | Task | Title |
-   | ID | Text |
-   | Description | Text |
-   | Tags | Multi-select |
-   | Done | Number |
-   | Total | Number |
-   | Percentage | Number — enable "Show as bar" in the property settings |
-   | Δ Last run | Number |
-   | Completed | Checkbox |
-   | Registered | Date |
-   | Completed at | Date |
-   | Duration (days) | Number |
-   | Last synced | Date |
+   | Property        | Type                                                   |
+   | --------------- | ------------------------------------------------------ |
+   | Task            | Title                                                  |
+   | ID              | Text                                                   |
+   | Description     | Text                                                   |
+   | Tags            | Multi-select                                           |
+   | Done            | Number                                                 |
+   | Total           | Number                                                 |
+   | Percentage      | Number — enable "Show as bar" in the property settings |
+   | Δ Last run      | Number                                                 |
+   | Completed       | Checkbox                                               |
+   | Registered      | Date                                                   |
+   | Completed at    | Date                                                   |
+   | Duration (days) | Number                                                 |
+   | Last synced     | Date                                                   |
 
 3. **Connect the integration to the database** via `... → Add connections → <your integration>`.
-4. **Copy the database ID and the data source ID.** Notion stores databases as a container of one or more *data sources* (rows live in a data source). The reporter needs both:
+4. **Copy the database ID and the data source ID.** Notion stores databases as a container of one or more _data sources_ (rows live in a data source). The reporter needs both:
    - **Database ID**: from the database URL, `notion.so/<workspace>/<DATABASE_ID>?v=...`. Used as the parent when creating new rows.
    - **Data source ID**: open the database, click `•••` → `Manage data sources` → copy the data source's URL or ID. Used when querying existing rows.
 
    If you only see one data source (the typical case), it's the database's default one — same content, different ID.
+
 5. **Set up the page layout** (a one-time visual choice — the reporter never touches it):
    - Add a chart block on top of the database. Donut chart, aggregating `Done` vs (`Total` − `Done`).
    - Below it, embed a linked view of the database in **List** or **Table** mode so `Percentage` renders as a progress bar per row.

@@ -207,7 +207,9 @@ export default reporter;
 // Shape B — default-export a factory that receives the config block:
 export default function createReporter(config: { token: string }): Reporter {
   return {
-    async report(report) { /* … */ },
+    async report(report) {
+      /* … */
+    },
   };
 }
 ```
