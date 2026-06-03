@@ -1,54 +1,27 @@
 {
-  "name": "refactor-tracker",
-  "version": "0.2.0",
-  "description": "Run configurable shell detections to track and report technical-refactor progress.",
-  "bin": {
-    "refactor-tracker": "dist/cli.js"
-  },
-  "files": [
-    "dist"
+  "name": "refactor-tracker-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
   "scripts": {
-    "build": "tsdown",
-    "test": "vitest run",
-    "dev": "vitest",
+    "build": "pnpm -r --parallel build",
+    "test": "pnpm -r test",
+    "dev": "pnpm --filter refactor-tracker dev",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "prepare": "husky"
-  },
-  "dependencies": {
-    "citty": "0.2.2",
-    "eta": "^4.6.0",
-    "execa": "9.6.1",
-    "js-yaml": "4.1.1",
-    "zod": "4.4.3"
   },
   "devDependencies": {
     "@commitlint/cli": "21.0.1",
     "@commitlint/config-conventional": "21.0.1",
-    "@semantic-release/changelog": "6.0.3",
-    "@semantic-release/git": "10.0.1",
-    "@types/js-yaml": "4.0.9",
-    "@types/node": "25.9.1",
     "husky": "9.1.7",
     "lint-staged": "17.0.5",
     "oxfmt": "0.52.0",
-    "oxlint": "1.67.0",
-    "semantic-release": "25.0.3",
-    "tsdown": "0.22.1",
-    "typescript": "6.0.3",
-    "vitest": "4.1.7"
+    "oxlint": "1.67.0"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts}": [

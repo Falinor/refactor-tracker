@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "separate-pull-requests": false,
+  "include-component-in-tag": true,
+  "tag-separator": "-",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": false,
+  "pull-request-title-pattern": "chore: release ${component} ${version}",
+  "packages": {
+    "packages/core": {
+      "component": "refactor-tracker",
+      "package-name": "refactor-tracker",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/notion-reporter": {
+      "component": "refactor-tracker-notion-reporter",
+      "package-name": "refactor-tracker-notion-reporter",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}

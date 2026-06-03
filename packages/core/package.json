@@ -1,0 +1,39 @@
+{
+  "name": "refactor-tracker",
+  "version": "0.2.0",
+  "description": "Run configurable shell detections to track and report technical-refactor progress.",
+  "bin": {
+    "refactor-tracker": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "dev": "vitest"
+  },
+  "dependencies": {
+    "citty": "0.2.2",
+    "eta": "^4.6.0",
+    "execa": "9.6.1",
+    "js-yaml": "4.1.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "4.0.9",
+    "@types/node": "25.9.1",
+    "tsdown": "0.22.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.7"
+  }
+}
