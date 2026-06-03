@@ -15,7 +15,7 @@ This repo uses **pnpm**. ESM-only, Node 24 in CI.
 | Single test by name | `pnpm --filter refactor-tracker exec vitest run -t "computes delta"`  |
 | Type-check only     | `pnpm --filter refactor-tracker exec tsc --noEmit`                    |
 | Lint                | `pnpm lint` (oxlint) · `pnpm lint:fix` to autofix                     |
-| Format              | `pnpm fmt` (oxfmt) · `pnpm fmt:check` to verify                       |
+| Format              | `pnpm format` (oxfmt) · `pnpm format:check` to verify                 |
 
 Lint/format are handled by the **oxc** toolchain: `oxlint` (config in `.oxlintrc.json` — `correctness` category as errors, with the `typescript`/`unicorn`/`oxc` plugins) and `oxfmt`. A `lint-staged` config runs `oxfmt` then `oxlint --fix` on staged JS/TS files.
 
