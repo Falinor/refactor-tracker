@@ -35,7 +35,7 @@ Pipeline (one direction, each stage in its own file):
 - **`engine.ts`** — orchestrates per-refactor detection, computes `percentage`, `delta` (vs cached `done`, `null` on first run), and a global `hasChanges`. Takes injectable `run` and `now` for tests; skips the cache write in `dryRun`.
 - **`detect.ts`** — resolves the count shapes (the README table) and enforces the non-negative-integer contract on stdout.
 - **`runner.ts`** — the only real side-effecting shell call: `execa(command, { shell: true, reject: false })`. `cwd` is the config file's directory.
-- **`reporters/index.ts`** — factory mapping `type` → reporter. Built-ins: `stdout` (default when none configured), `json`, `markdown`. `custom` dynamically imports a module whose default export implements `Reporter`.
+- **`reporters/index.ts`** — factory mapping `type` → reporter. Built-ins: `stdout` (default when none configured), `json`, `markdown`, `html`. `custom` dynamically imports a module whose default export implements `Reporter`.
 - **`index.ts`** — the public API surface, and it only re-exports types (`Report`, `TaskResult`, `Reporter`). Custom reporters import `Reporter` from here.
 
 ### Conventions that bite
