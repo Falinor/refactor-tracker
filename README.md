@@ -170,31 +170,48 @@ These are presentation concerns: they apply to `stdout`, `markdown`, `html`, and
 | `json`     | The full report object to a file (`output: <path>` required)                                |
 | `markdown` | A progress table to a `.md` file (`output: <path>` required)                                |
 | `html`     | A self-contained HTML page with progress bars to a `.html` file (`output: <path>` required) |
-| `custom`   | Your own module (`path: <path>`) — the extension point for Slack, Linear, Notion, etc.      |
+| `custom`   | Your own module — file path or npm package; extension point for Slack, Linear, Notion, etc. |
 
 ### Custom reporters
 
-Default-export an object implementing `Reporter`:
-
-```ts
-// reporters/slack.ts
-import type { Reporter } from 'refactor-tracker';
-
-const reporter: Reporter = {
-  async report(report) {
-    // report.tasks: { id, name, done, total, percentage, delta }[]
-    // report.hasChanges: skip expensive work when nothing changed
-  },
-};
-
-export default reporter;
-```
+A `custom` reporter loads an external module and uses it as a `Reporter` implementation. Reference it by either a relative file path or an npm module specifier:
 
 ```yaml
 reporters:
+  # Local file
   - type: custom
-    path: ./reporters/slack.ts
+    path: ./reporters/slack.mjs
+
+  # npm package
+  - type: custom
+    module: refactor-tracker-notion-reporter
+    token: $NOTION_TOKEN
+    databaseId: 1a2b3c4d-...
 ```
+
+Exactly one of `path` or `module` is required. If the module's default export is a **function**, it's called as a factory with the reporter config (minus `type`, `module`, and `path`) and must return a `Reporter`. Otherwise the default export is used directly as the `Reporter`:
+
+```ts
+import type { Reporter } from 'refactor-tracker';
+
+// Shape A — default-export an instance:
+const reporter: Reporter = {
+  async report(report) {
+    // report.tasks: { id, name, done, total, percentage, delta, ... }[]
+    // report.hasChanges: skip expensive work when nothing changed
+  },
+};
+export default reporter;
+
+// Shape B — default-export a factory that receives the config block:
+export default function createReporter(config: { token: string }): Reporter {
+  return {
+    async report(report) { /* … */ },
+  };
+}
+```
+
+`$VAR` references in any reporter field are expanded against `process.env` (missing variables are a hard error).
 
 ## How it works
 
