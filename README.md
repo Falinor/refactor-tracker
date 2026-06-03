@@ -187,6 +187,7 @@ reporters:
     module: refactor-tracker-notion-reporter
     token: $NOTION_TOKEN
     databaseId: 1a2b3c4d-...
+    dataSourceId: 0a1b2c3d-...
 ```
 
 Exactly one of `path` or `module` is required. If the module's default export is a **function**, it's called as a factory with the reporter config (minus `type`, `module`, and `path`) and must return a `Reporter`. Otherwise the default export is used directly as the `Reporter`:
@@ -212,6 +213,21 @@ export default function createReporter(config: { token: string }): Reporter {
 ```
 
 `$VAR` references in any reporter field are expanded against `process.env` (missing variables are a hard error).
+
+### Notion
+
+To sync each snapshot to a Notion database (donut, per-task progress bars, table on a private team page), install [`refactor-tracker-notion-reporter`](./packages/notion-reporter/README.md) and wire it as a custom reporter:
+
+```yaml
+reporters:
+  - type: custom
+    module: refactor-tracker-notion-reporter
+    token: $NOTION_TOKEN
+    databaseId: 1a2b3c4d-...
+    dataSourceId: 0a1b2c3d-...
+```
+
+See the package README for the one-time Notion setup (integration, database schema, page layout, where to find both IDs).
 
 ## How it works
 
