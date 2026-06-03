@@ -66,9 +66,6 @@ importers:
       '@notionhq/client':
         specifier: 5.22.0
         version: 5.22.0
-      refactor-tracker:
-        specifier: '>=0.2.0'
-        version: 0.2.0
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -76,6 +73,9 @@ importers:
       '@types/node':
         specifier: 25.9.1
         version: 25.9.1
+      refactor-tracker:
+        specifier: workspace:*
+        version: link:../core
       tsdown:
         specifier: 0.22.1
         version: 0.22.1(typescript@6.0.3)
@@ -1119,10 +1119,6 @@ packages:
 
   quansync@1.0.0:
     resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
-
-  refactor-tracker@0.2.0:
-    resolution: {integrity: sha512-L9htZzgQFyt+926VjEv1VooxQh6KiyCvUsSIdeKKLhitBHWNTW5O98McOdDMfoi2hbXFENW7MxD8HDpGcoq9Uw==}
-    hasBin: true
 
   require-from-string@2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
@@ -2273,14 +2269,6 @@ snapshots:
       parse-ms: 4.0.0
 
   quansync@1.0.0: {}
-
-  refactor-tracker@0.2.0:
-    dependencies:
-      citty: 0.2.2
-      eta: 4.6.0
-      execa: 9.6.1
-      js-yaml: 4.1.1
-      zod: 4.4.3
 
   require-from-string@2.0.2: {}
 
