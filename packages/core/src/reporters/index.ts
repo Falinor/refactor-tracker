@@ -30,9 +30,24 @@ export async function createReporters(
         reporters.push(new HtmlReporter(resolveOutput(config.output as string)));
         break;
       case 'custom': {
-        const resolved = path.resolve(baseDir, config.path as string);
-        const mod = await import(pathToFileURL(resolved).href);
-        reporters.push(mod.default as Reporter);
+        const hasModule = typeof config.module === 'string' && config.module.length > 0;
+        const hasPath = typeof config.path === 'string' && config.path.length > 0;
+        if (hasModule === hasPath) {
+          throw new Error('custom reporter: exactly one of `module` or `path` must be provided');
+        }
+        const specifier = hasModule
+          ? (config.module as string)
+          : pathToFileURL(path.resolve(baseDir, config.path as string)).href;
+        const mod = await import(specifier);
+        const {
+          type: _t,
+          module: _m,
+          path: _p,
+          ...reporterConfig
+        } = config as Record<string, unknown>;
+        const exported = mod.default as Reporter | ((cfg: Record<string, unknown>) => Reporter);
+        const reporter = typeof exported === 'function' ? exported(reporterConfig) : exported;
+        reporters.push(reporter);
         break;
       }
       default:
