@@ -16,7 +16,8 @@
     "packages/notion-reporter": {
       "component": "refactor-tracker-notion-reporter",
       "package-name": "refactor-tracker-notion-reporter",
-      "changelog-path": "CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md",
+      "release-as": "0.1.0"
     }
   }
 }
