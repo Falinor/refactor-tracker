@@ -1,6 +1,6 @@
 {
   "name": "refactor-tracker",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Run configurable shell detections to track and report technical-refactor progress.",
   "bin": {
     "refactor-tracker": "dist/cli.js"

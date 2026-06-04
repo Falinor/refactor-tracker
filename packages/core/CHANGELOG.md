@@ -1,4 +1,14 @@
-# [0.2.0](https://github.com/Falinor/refactor-tracker/compare/v0.1.0...v0.2.0) (2026-06-01)
+# Changelog
+
+## [0.3.0](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.2.0...refactor-tracker-v0.3.0) (2026-06-04)
+
+
+### Features
+
+* **reporters:** support module specifiers and factory exports in custom reporter ([5ad8a6b](https://github.com/Falinor/refactor-tracker/commit/5ad8a6bf354a169d69f6a508f70c2277832545b4))
+* workspace, custom-loader extension, and Notion reporter ([182a628](https://github.com/Falinor/refactor-tracker/commit/182a628a306089d776a3a00935f07985b2650513))
+
+## [0.2.0](https://github.com/Falinor/refactor-tracker/compare/v0.1.0...v0.2.0) (2026-06-01)
 
 ### Bug Fixes
 
