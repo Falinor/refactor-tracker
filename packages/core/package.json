@@ -6,6 +6,7 @@
     "refactor-tracker": "dist/cli.js"
   },
   "files": [
+    "README.md",
     "dist"
   ],
   "type": "module",
