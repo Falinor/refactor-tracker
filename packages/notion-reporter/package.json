@@ -1,6 +1,6 @@
 {
   "name": "refactor-tracker-notion-reporter",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Notion reporter for refactor-tracker — syncs each snapshot to a Notion database.",
   "files": [
     "dist"
