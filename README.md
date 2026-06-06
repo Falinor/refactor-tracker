@@ -18,8 +18,8 @@ refactors:
   - id: lazy-routes
     name: Lazy-load top-level routes
     detect:
-      done:  { command: "grep -rl 'React.lazy' frontend/src/views | wc -l" }
-      total: { command: "ls frontend/src/views | wc -l" }
+      done: { command: "grep -rl 'React.lazy' frontend/src/views | wc -l" }
+      total: { command: 'ls frontend/src/views | wc -l' }
 ```
 
 Then run `pnpm dlx refactor-tracker` — locally, in CI on merge, or both. Each run:
