@@ -1,5 +1,10 @@
 # refactor-tracker-notion-reporter
 
+[![npm version](https://img.shields.io/npm/v/refactor-tracker-notion-reporter.svg?style=flat-square)](https://www.npmjs.com/package/refactor-tracker-notion-reporter)
+[![npm downloads](https://img.shields.io/npm/dm/refactor-tracker-notion-reporter.svg?style=flat-square)](https://www.npmjs.com/package/refactor-tracker-notion-reporter)
+[![CI](https://github.com/Falinor/refactor-tracker/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Falinor/refactor-tracker/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](../../LICENSE)
+
 A [refactor-tracker](https://www.npmjs.com/package/refactor-tracker) reporter that syncs each snapshot to a Notion database, so your team sees a live page with a donut chart, per-task progress bars, and a details table.
 
 ## Install
