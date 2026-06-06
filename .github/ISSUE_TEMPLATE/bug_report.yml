@@ -1,0 +1,76 @@
+name: Bug report
+description: Something doesn't work the way it should
+labels: ['bug']
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what actually happened?
+      placeholder: |
+        Steps to reproduce:
+        1. ...
+        2. ...
+
+        Expected: ...
+        Got: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Minimal `.tech-refactors.yml`
+      description: The smallest config that triggers the issue. Redact any sensitive paths or commands.
+      render: yaml
+    validations:
+      required: false
+
+  - type: textarea
+    id: output
+    attributes:
+      label: CLI output
+      description: Full output of the failing run, ideally with `--verbose` if applicable.
+      render: shell
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: refactor-tracker version
+      description: Output of `pnpm dlx refactor-tracker --version` (or the version in your `package.json`).
+      placeholder: '0.3.0'
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node version
+      placeholder: '24.x.x'
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: 'macOS 15.1 / Ubuntu 24.04 / Windows 11'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: reporter
+    attributes:
+      label: Which reporter(s) are involved?
+      multiple: true
+      options:
+        - stdout
+        - json
+        - markdown
+        - html
+        - custom (incl. notion-reporter)
+        - not reporter-related
+    validations:
+      required: false
