@@ -30,6 +30,10 @@ Then run `pnpm dlx refactor-tracker` — locally, in CI on merge, or both. Each 
 
 Milestones (`registeredAt`, sticky `completedAt`) are persisted in `.refactor-tracker-state.json` next to the config. Unlike the cache, **commit this file** so milestones travel with the codebase.
 
+## Data handling
+
+The tool runs only the shell commands you configure, in the directory of your config file. It does not phone home, collect telemetry, or send your code anywhere. The only network calls it makes are the ones explicitly performed by reporters you opt into (e.g. the Notion reporter posting to the Notion API).
+
 ## Repository layout
 
 This is a pnpm workspace; each package publishes independently via [release-please](https://github.com/googleapis/release-please) on merge to `main`.

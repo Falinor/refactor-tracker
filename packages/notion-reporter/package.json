@@ -2,7 +2,29 @@
   "name": "refactor-tracker-notion-reporter",
   "version": "0.1.0",
   "description": "Notion reporter for refactor-tracker — syncs each snapshot to a Notion database.",
+  "keywords": [
+    "dashboard",
+    "notion",
+    "refactor",
+    "refactor-tracker",
+    "refactor-tracker-reporter",
+    "reporter",
+    "tech-debt"
+  ],
+  "homepage": "https://github.com/Falinor/refactor-tracker/tree/main/packages/notion-reporter#readme",
+  "bugs": {
+    "url": "https://github.com/Falinor/refactor-tracker/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Andrea Gueugnaut",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Falinor/refactor-tracker.git",
+    "directory": "packages/notion-reporter"
+  },
   "files": [
+    "LICENSE",
+    "README.md",
     "dist"
   ],
   "type": "module",

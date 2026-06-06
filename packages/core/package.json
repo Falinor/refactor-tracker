@@ -2,10 +2,34 @@
   "name": "refactor-tracker",
   "version": "0.3.0",
   "description": "Run configurable shell detections to track and report technical-refactor progress.",
+  "keywords": [
+    "cli",
+    "codebase",
+    "dashboard",
+    "metrics",
+    "migration",
+    "progress",
+    "refactor",
+    "refactoring",
+    "tech-debt",
+    "technical-debt"
+  ],
+  "homepage": "https://github.com/Falinor/refactor-tracker/tree/main/packages/core#readme",
+  "bugs": {
+    "url": "https://github.com/Falinor/refactor-tracker/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Andrea Gueugnaut",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Falinor/refactor-tracker.git",
+    "directory": "packages/core"
+  },
   "bin": {
     "refactor-tracker": "dist/cli.js"
   },
   "files": [
+    "LICENSE",
     "README.md",
     "dist"
   ],
