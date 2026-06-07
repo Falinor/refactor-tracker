@@ -21,6 +21,9 @@ export default {
         'json-reporter',
         'markdown-reporter',
         'html-reporter',
+        // Sibling packages
+        'action',
+        'notion-reporter',
         // Meta
         'readme',
         'deps',

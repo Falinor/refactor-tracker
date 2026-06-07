@@ -1,0 +1,52 @@
+name: 'refactor-tracker'
+description: 'Track tech-debt refactor progress in CI — run detections, persist cache, comment deltas on PRs.'
+author: 'Andrea Gueugnaut'
+
+branding:
+  icon: 'trending-up'
+  color: 'blue'
+
+inputs:
+  config-path:
+    description: 'Path to the refactor-tracker config file, relative to working-directory.'
+    required: false
+    default: '.tech-refactors.yml'
+
+  working-directory:
+    description: 'Directory to run refactor-tracker from. Relative to the repository root.'
+    required: false
+    default: '.'
+
+  fail-on-regression:
+    description: 'If true, fail the step when any tracked metric regressed vs the baseline.'
+    required: false
+    default: 'false'
+
+  comment-on-pr:
+    description: 'Post (and update on subsequent pushes) a sticky comment with the delta on the PR.'
+    required: false
+    default: 'true'
+
+  cache-strategy:
+    description: 'How the cache file is persisted between runs. One of: actions-cache | none.'
+    required: false
+    default: 'actions-cache'
+
+  github-token:
+    description: 'Token used to read PR context and post comments. Defaults to the workflow token.'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  delta:
+    description: 'Sum of per-task deltas across all tracked refactors (positive = progress).'
+  total:
+    description: 'Total number of tracked refactors.'
+  has-changes:
+    description: '"true" if any task moved since the baseline, "false" otherwise.'
+  report-json:
+    description: 'The full Report serialized as a JSON string.'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
