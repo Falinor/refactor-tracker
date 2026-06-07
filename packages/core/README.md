@@ -100,7 +100,10 @@ refactor-tracker [options]
   -c, --config <path>     Path to config file (default: .tech-refactors.yml)
   --dry-run               Run detections and print the report as JSON; do not invoke reporters
   --fail-on-regression    Exit 1 if any task's done count decreased vs the cache
+  --report-output <path>  Write the full Report as JSON to this path, independent of reporters
 ```
+
+`--report-output` is useful when a downstream tool (CI script, GitHub Action, dashboard) needs the typed Report alongside whatever reporters fire. Reporters in the config still run; the file is written after detections succeed and works with or without `--dry-run`. The path is resolved against the current working directory.
 
 ### GitHub Action
 
