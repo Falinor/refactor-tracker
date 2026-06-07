@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { access, mkdtemp, rm, copyFile, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm, copyFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +8,7 @@ import { runCommand } from 'citty';
 import { execute, main } from '../src/cli.js';
 import { writeCache } from '../src/cache.js';
 import type { Config } from '../src/config.js';
+import type { Report } from '../src/types.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 let dir: string;
@@ -130,5 +131,44 @@ describe('--sort-by', () => {
       rawArgs: ['--config', configPath, '--sort-by', 'bogus', '--dry-run'],
     });
     expect(result).toBe(1);
+  });
+});
+
+describe('--report-output', () => {
+  it('writes the full Report as JSON to the given path on a normal run', async () => {
+    const out = path.join(dir, 'report.json');
+    const code = await execute({
+      config: configPath,
+      dryRun: false,
+      failOnRegression: false,
+      reportOutput: out,
+    });
+    expect(code).toBe(0);
+    const parsed: Report = JSON.parse(await readFile(out, 'utf8'));
+    expect(parsed).toHaveProperty('tasks');
+    expect(parsed).toHaveProperty('timestamp');
+    expect(parsed).toHaveProperty('hasChanges');
+    expect(Array.isArray(parsed.tasks)).toBe(true);
+  });
+
+  it('writes the report file even under --dry-run', async () => {
+    const out = path.join(dir, 'dry-report.json');
+    const code = await execute({
+      config: configPath,
+      dryRun: true,
+      failOnRegression: false,
+      reportOutput: out,
+    });
+    expect(code).toBe(0);
+    await expect(access(out)).resolves.toBeUndefined();
+  });
+
+  it('is wired through citty as --report-output', async () => {
+    const out = path.join(dir, 'cli-report.json');
+    const { result } = await runCommand(main, {
+      rawArgs: ['--config', configPath, '--report-output', out, '--dry-run'],
+    });
+    expect(result).toBe(0);
+    await expect(access(out)).resolves.toBeUndefined();
   });
 });

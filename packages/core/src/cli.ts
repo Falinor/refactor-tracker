@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { defineCommand, runMain } from 'citty';
@@ -14,6 +15,7 @@ export interface ExecuteOptions {
   tags?: string[];
   showCompleted?: boolean;
   sortBy?: 'registered' | 'completed' | 'progress';
+  reportOutput?: string;
 }
 
 export async function execute(options: ExecuteOptions): Promise<number> {
@@ -33,6 +35,10 @@ export async function execute(options: ExecuteOptions): Promise<number> {
   } catch (err) {
     console.error(err instanceof Error ? err.message : String(err));
     return 1;
+  }
+
+  if (options.reportOutput) {
+    await writeFile(path.resolve(options.reportOutput), JSON.stringify(report, null, 2), 'utf8');
   }
 
   if (options.dryRun) {
@@ -113,6 +119,12 @@ export const main = defineCommand({
         'Sort tasks: registered (oldest first), completed (most recent first), or progress (least done first)',
       valueHint: 'registered|completed|progress',
     },
+    'report-output': {
+      type: 'string',
+      description:
+        'Write the full Report as JSON to this path (independent of configured reporters)',
+      valueHint: 'path',
+    },
   },
   async run({ args, rawArgs }) {
     const tags = collectTagFlags(rawArgs);
@@ -131,6 +143,7 @@ export const main = defineCommand({
       tags: tags.length > 0 ? tags : undefined,
       showCompleted: args['show-completed'],
       sortBy: sortBy as ExecuteOptions['sortBy'] | undefined,
+      reportOutput: args['report-output'] as string | undefined,
     });
     if (code !== 0) process.exitCode = code;
     return code;
