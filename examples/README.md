@@ -1,6 +1,6 @@
 # Examples
 
-Each subdirectory is a self-contained, runnable example: a tiny TypeScript source tree plus a `.tech-refactors.yml` that tracks a real migration shape. Drop into any of them and run the CLI to see the numbers.
+Each subdirectory is a self-contained, runnable example: a tiny TypeScript source tree plus a `.refactor-tracker.yml` that tracks a real migration shape. Drop into any of them and run the CLI to see the numbers.
 
 ```bash
 cd examples/ts-strict-migration
@@ -23,7 +23,7 @@ All examples are TypeScript-flavoured for now — the detection commands are pla
 ```
 examples/<name>/
   README.md            # what's being tracked, the detector commands, expected output
-  .tech-refactors.yml  # the actual config
+  .refactor-tracker.yml  # the actual config
   src/ (or tests/)     # tiny source tree with realistic patterns
 ```
 
