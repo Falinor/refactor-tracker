@@ -1,0 +1,12 @@
+reporters:
+  - type: stdout
+
+refactors:
+  - id: moment-to-date-fns
+    name: Replace moment with date-fns
+    description: Files still importing moment vs files already on date-fns
+    detect:
+      remaining:
+        command: 'grep -rl "from ''moment''" src | wc -l | tr -d '' '''
+      done:
+        command: 'grep -rl "from ''date-fns''" src | wc -l | tr -d '' '''

@@ -48,6 +48,19 @@ This is a pnpm workspace; each package publishes independently via [release-plea
 
 See each package's README for install, full configuration reference, and API details.
 
+## Examples
+
+Runnable migration scenarios live in [`examples/`](./examples) — each subfolder has a tiny TypeScript source tree, a `.tech-refactors.yml`, and a README explaining what's tracked:
+
+- [TypeScript strict migration](./examples/ts-strict-migration) (`any` cleanup)
+- [React class → hooks](./examples/class-to-hooks)
+- [Moment → date-fns](./examples/moment-to-date-fns)
+- [Redux → Zustand](./examples/redux-to-zustand)
+- [CommonJS → ESM](./examples/commonjs-to-esm)
+- [Mocha → Vitest](./examples/mocha-to-vitest)
+
+`cd` into any of them and run `pnpm dlx refactor-tracker` to see real output.
+
 ## Contributing
 
 Commits **must** follow [Conventional Commits](https://www.conventionalcommits.org/) — enforced locally by a husky `commit-msg` hook (commitlint) and in CI. The commit _type_ drives the next bump (`feat:` → minor, `fix:` → patch, `feat!:` or `BREAKING CHANGE` → major).

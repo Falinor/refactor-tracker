@@ -1,0 +1,12 @@
+reporters:
+  - type: stdout
+
+refactors:
+  - id: ts-strict
+    name: Eliminate `any` from the codebase
+    description: Files still using `any` types vs total TypeScript files
+    detect:
+      remaining:
+        command: "grep -rl -E ': any|as any|<any>' src | wc -l | tr -d ' '"
+      total:
+        command: "find src -name '*.ts' | wc -l | tr -d ' '"
