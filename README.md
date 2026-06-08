@@ -3,6 +3,9 @@
 [![CI](https://github.com/Falinor/refactor-tracker/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Falinor/refactor-tracker/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](./LICENSE)
 
+> [!NOTE]
+> **Beta — pre-1.0.** The CLI flags, config schema, and reporter API may change between minor releases. Pin an exact version in CI until 1.0 ships.
+
 A language-agnostic CLI for tracking technical refactors over time. You declare what "done" looks like for each refactor as a **shell command that prints a count**; the tool runs the commands, diffs against the last run, and dispatches the report to pluggable outputs (stdout / Markdown / HTML / JSON / custom).
 
 Detection is fully delegated to the shell: anything that prints a non-negative integer to stdout — `grep`, `ast-grep`, `ts-morph`, a custom script — is a valid detector. The tool itself never inspects code; it's a **number collector**.
