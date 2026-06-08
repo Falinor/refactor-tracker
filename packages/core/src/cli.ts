@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { defineCommand, runMain } from 'citty';
-import { loadConfig } from './config.js';
+import { loadConfig, type ReporterConfig } from './config.js';
 import { runEngine } from './engine.js';
 import { createReporters } from './reporters/index.js';
 import { applyView } from './view.js';
@@ -13,9 +13,34 @@ export interface ExecuteOptions {
   dryRun: boolean;
   failOnRegression: boolean;
   tags?: string[];
+  ids?: string[];
+  reporters?: ReporterConfig[];
   showCompleted?: boolean;
   sortBy?: 'registered' | 'completed' | 'progress';
   reportOutput?: string;
+  noCache?: boolean;
+  cachePath?: string;
+}
+
+const FILE_REPORTERS = new Set(['json', 'markdown', 'html']);
+
+export function parseReporterFlag(raw: string): ReporterConfig {
+  const colon = raw.indexOf(':');
+  const type = colon === -1 ? raw : raw.slice(0, colon);
+  const output = colon === -1 ? undefined : raw.slice(colon + 1);
+  if (type === 'stdout') {
+    if (output !== undefined) {
+      throw new Error('--reporter stdout takes no output path');
+    }
+    return { type: 'stdout' };
+  }
+  if (FILE_REPORTERS.has(type)) {
+    if (!output) {
+      throw new Error(`--reporter ${type} requires an output path (--reporter ${type}:<path>)`);
+    }
+    return { type, output };
+  }
+  throw new Error(`Unknown --reporter type: ${type}. Expected: stdout | json | markdown | html.`);
 }
 
 export async function execute(options: ExecuteOptions): Promise<number> {
@@ -23,14 +48,20 @@ export async function execute(options: ExecuteOptions): Promise<number> {
   const baseDir = path.dirname(configPath);
   const config = await loadConfig(configPath);
 
+  const cachePath = options.cachePath
+    ? path.resolve(options.cachePath)
+    : path.join(baseDir, '.refactor-tracker-cache.json');
+
   let report;
   try {
     report = await runEngine(config, {
-      cachePath: path.join(baseDir, '.refactor-tracker-cache.json'),
+      cachePath,
       statePath: path.join(baseDir, '.refactor-tracker-state.json'),
       cwd: baseDir,
       dryRun: options.dryRun,
       tagFilter: options.tags,
+      idFilter: options.ids,
+      noCache: options.noCache,
     });
   } catch (err) {
     console.error(err instanceof Error ? err.message : String(err));
@@ -44,7 +75,7 @@ export async function execute(options: ExecuteOptions): Promise<number> {
   if (options.dryRun) {
     console.log(JSON.stringify(report, null, 2));
   } else {
-    const reporterConfigs = config.reporters ?? [{ type: 'stdout' }];
+    const reporterConfigs = options.reporters ?? config.reporters ?? [{ type: 'stdout' }];
     const reporters = await createReporters(reporterConfigs, baseDir);
     const filtered = applyView(report, {
       showCompleted: !!options.showCompleted,
@@ -63,21 +94,22 @@ export async function execute(options: ExecuteOptions): Promise<number> {
   return 0;
 }
 
-function collectTagFlags(rawArgs: string[]): string[] {
-  const tags: string[] = [];
+function collectRepeatedFlag(rawArgs: string[], flag: string): string[] {
+  const values: string[] = [];
+  const prefix = `${flag}=`;
   for (let i = 0; i < rawArgs.length; i++) {
     const a = rawArgs[i];
-    if (a === '--tag') {
+    if (a === flag) {
       const next = rawArgs[i + 1];
       if (next !== undefined && !next.startsWith('-')) {
-        tags.push(next);
+        values.push(next);
         i++;
       }
-    } else if (a.startsWith('--tag=')) {
-      tags.push(a.slice('--tag='.length));
+    } else if (a.startsWith(prefix)) {
+      values.push(a.slice(prefix.length));
     }
   }
-  return tags;
+  return values;
 }
 
 export const main = defineCommand({
@@ -108,6 +140,18 @@ export const main = defineCommand({
       description: 'Filter refactors by tag (repeatable, OR semantics: --tag a --tag b)',
       valueHint: 'name',
     },
+    id: {
+      type: 'string',
+      description:
+        'Filter refactors by id (repeatable, OR semantics: --id a --id b). Combines with --tag via AND.',
+      valueHint: 'id',
+    },
+    reporter: {
+      type: 'string',
+      description:
+        'Override configured reporters (repeatable): stdout, or json:<path> / markdown:<path> / html:<path>',
+      valueHint: 'type[:path]',
+    },
     'show-completed': {
       type: 'boolean',
       description: 'Include refactors that have already reached 100% in reporter output',
@@ -125,9 +169,32 @@ export const main = defineCommand({
         'Write the full Report as JSON to this path (independent of configured reporters)',
       valueHint: 'path',
     },
+    'no-cache': {
+      type: 'boolean',
+      description: 'Skip reading and writing the cache file; delta will be null for every task',
+      default: false,
+    },
+    'cache-path': {
+      type: 'string',
+      description:
+        'Override the cache file path (default: .refactor-tracker-cache.json next to the config)',
+      valueHint: 'path',
+    },
   },
   async run({ args, rawArgs }) {
-    const tags = collectTagFlags(rawArgs);
+    const tags = collectRepeatedFlag(rawArgs, '--tag');
+    const ids = collectRepeatedFlag(rawArgs, '--id');
+    const reporterFlags = collectRepeatedFlag(rawArgs, '--reporter');
+    let reporters: ReporterConfig[] | undefined;
+    if (reporterFlags.length > 0) {
+      try {
+        reporters = reporterFlags.map(parseReporterFlag);
+      } catch (err) {
+        console.error(err instanceof Error ? err.message : String(err));
+        process.exitCode = 1;
+        return 1;
+      }
+    }
     const sortBy = args['sort-by'] as string | undefined;
     if (sortBy !== undefined && !['registered', 'completed', 'progress'].includes(sortBy)) {
       console.error(
@@ -141,9 +208,13 @@ export const main = defineCommand({
       dryRun: args['dry-run'],
       failOnRegression: args['fail-on-regression'],
       tags: tags.length > 0 ? tags : undefined,
+      ids: ids.length > 0 ? ids : undefined,
+      reporters,
       showCompleted: args['show-completed'],
       sortBy: sortBy as ExecuteOptions['sortBy'] | undefined,
       reportOutput: args['report-output'] as string | undefined,
+      noCache: args['no-cache'],
+      cachePath: args['cache-path'] as string | undefined,
     });
     if (code !== 0) process.exitCode = code;
     return code;

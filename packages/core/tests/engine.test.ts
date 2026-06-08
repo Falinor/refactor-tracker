@@ -222,6 +222,118 @@ describe('runEngine', () => {
     });
   });
 
+  it('filters refactors by id (OR semantics) before running detection', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      const multi: Config = {
+        refactors: [
+          {
+            id: 'fe',
+            name: 'FE',
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+          {
+            id: 'be',
+            name: 'BE',
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+          {
+            id: 'ops',
+            name: 'Ops',
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+        ],
+      };
+      const report = await runEngine(multi, {
+        cachePath,
+        statePath,
+        run,
+        now: fixedNow,
+        idFilter: ['fe', 'ops'],
+      });
+      expect(report.tasks.map((t) => t.id)).toEqual(['fe', 'ops']);
+    });
+  });
+
+  it('combines idFilter and tagFilter with AND semantics', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      const multi: Config = {
+        refactors: [
+          {
+            id: 'fe',
+            name: 'FE',
+            tags: ['frontend'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+          {
+            id: 'be',
+            name: 'BE',
+            tags: ['backend'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+          {
+            id: 'fe-perf',
+            name: 'FE perf',
+            tags: ['frontend'],
+            detect: { done: { command: 'd' }, total: { command: 't' } } as any,
+          },
+        ],
+      };
+      const report = await runEngine(multi, {
+        cachePath,
+        statePath,
+        run,
+        now: fixedNow,
+        tagFilter: ['frontend'],
+        idFilter: ['fe'],
+      });
+      expect(report.tasks.map((t) => t.id)).toEqual(['fe']);
+    });
+  });
+
+  it('throws when idFilter matches zero refactors', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      await expect(
+        runEngine(config, { cachePath, statePath, run, now: fixedNow, idFilter: ['nope'] }),
+      ).rejects.toThrow(/no refactors match/i);
+    });
+  });
+
+  it('with noCache, ignores existing cache (delta null) and does not write it', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      await writeCache(cachePath, { abc: { done: 1, total: 11, timestamp: 'old' } });
+      const report = await runEngine(config, {
+        cachePath,
+        statePath,
+        run,
+        now: fixedNow,
+        noCache: true,
+      });
+      expect(report.tasks[0].delta).toBeNull();
+      expect(await readCache(cachePath)).toEqual({
+        abc: { done: 1, total: 11, timestamp: 'old' },
+      });
+    });
+  });
+
+  it('with noCache, still writes the state file', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      await runEngine(config, { cachePath, statePath, run, now: fixedNow, noCache: true });
+      expect(await readState(statePath)).toEqual({
+        abc: { registeredAt: '2026-05-28T12:00:00.000Z' },
+      });
+    });
+  });
+
   it('attaches items when the list command returns content and remaining > 0', async () => {
     await withTempDir(async (dir) => {
       const cachePath = path.join(dir, 'cache.json');
