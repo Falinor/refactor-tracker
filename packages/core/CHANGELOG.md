@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.3.0...refactor-tracker-v0.4.0) (2026-06-08)
+
+
+### Features
+
+* **cli:** add --report-output to write the typed Report to a file ([ce5859f](https://github.com/Falinor/refactor-tracker/commit/ce5859f74885b5793a7ef40276756ed9cadf34a5))
+* **cli:** add --report-output to write the typed Report to a file ([4cf21ce](https://github.com/Falinor/refactor-tracker/commit/4cf21ce2123f8164bfe3e88c15836dd069ae9049))
+* rename default config to .refactor-tracker.yml ([d6efe92](https://github.com/Falinor/refactor-tracker/commit/d6efe927444ba92ff27f44161be8e4b3c0c751b6))
+
 ## [0.3.0](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.2.0...refactor-tracker-v0.3.0) (2026-06-04)
 
 
