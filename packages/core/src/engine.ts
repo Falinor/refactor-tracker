@@ -22,7 +22,10 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
   const run = options.run ?? runCommand;
   const now = options.now ?? (() => new Date());
   const timestamp = now().toISOString();
-  const cache = options.noCache ? {} : await readCache(options.cachePath);
+  // We always read the cache (even under noCache) so the timestamp resolver can
+  // tell "prior run, state file missing" from "genuine first run". noCache only
+  // gates the on-disk write below and the delta computation per refactor.
+  const cache = await readCache(options.cachePath);
   const state = await readState(options.statePath);
 
   const tagFilter = options.tagFilter;
@@ -54,7 +57,7 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
     const { done, total } = await resolveDetection(refactor.detect, run, options.cwd);
     const percentage = total === 0 ? 0 : Math.round((done / total) * 100);
     const prev = cache[refactor.id];
-    const delta = prev ? done - prev.done : null;
+    const delta = options.noCache ? null : prev ? done - prev.done : null;
     if (!prev || prev.done !== done || prev.total !== total) hasChanges = true;
 
     const items =

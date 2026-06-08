@@ -334,6 +334,25 @@ describe('runEngine', () => {
     });
   });
 
+  it('with noCache, does not stamp a fresh registeredAt when cache exists but state is empty', async () => {
+    await withTempDir(async (dir) => {
+      const cachePath = path.join(dir, 'cache.json');
+      const statePath = path.join(dir, 'state.json');
+      // Pre-PR cache from an earlier run (refactor known to the tracker), but no state file.
+      await writeCache(cachePath, { abc: { done: 1, total: 11, timestamp: 'old' } });
+      const report = await runEngine(config, {
+        cachePath,
+        statePath,
+        run,
+        now: fixedNow,
+        noCache: true,
+      });
+      expect(report.tasks[0].registeredAt).toBeNull();
+      // And the bogus timestamp must not leak into state on disk.
+      expect(await readState(statePath)).toEqual({});
+    });
+  });
+
   it('attaches items when the list command returns content and remaining > 0', async () => {
     await withTempDir(async (dir) => {
       const cachePath = path.join(dir, 'cache.json');
