@@ -3,7 +3,8 @@ import type { Report, TaskResult } from './types.js';
 import { resolveDetection, resolveList, type CommandRunner } from './detect.js';
 import { runCommand } from './runner.js';
 import { readCache, writeCache, type Cache } from './cache.js';
-import { readState, writeState, type State, type StateEntry } from './state.js';
+import { readState, writeState, type State } from './state.js';
+import { resolveTaskTimestamps } from './timestamps.js';
 
 export interface EngineOptions {
   cachePath: string;
@@ -59,27 +60,7 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
     const items =
       total - done > 0 ? await resolveList(refactor.detect, run, options.cwd) : undefined;
 
-    const stateEntry = state[refactor.id];
-    let registeredAt: string | null;
-    if (refactor.registeredAt) {
-      registeredAt = refactor.registeredAt;
-    } else if (stateEntry?.registeredAt) {
-      registeredAt = stateEntry.registeredAt;
-    } else if (cache[refactor.id]) {
-      registeredAt = null;
-    } else {
-      registeredAt = timestamp;
-    }
-
-    let completedAt: string | null = stateEntry?.completedAt ?? null;
-    if (!completedAt && total > 0 && done === total) {
-      completedAt = timestamp;
-    }
-
-    const durationDays =
-      registeredAt && completedAt
-        ? Math.floor((Date.parse(completedAt) - Date.parse(registeredAt)) / 86_400_000)
-        : null;
+    const ts = resolveTaskTimestamps(refactor, state[refactor.id], prev, done, total, timestamp);
 
     tasks.push({
       id: refactor.id,
@@ -91,17 +72,15 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
       percentage,
       delta,
       ...(items ? { items } : {}),
-      registeredAt,
-      completedAt,
-      durationDays,
+      ...ts,
     });
     nextCache[refactor.id] = { done, total, timestamp };
 
-    if (registeredAt !== null || completedAt !== null) {
+    if (ts.registeredAt !== null || ts.completedAt !== null) {
       nextState[refactor.id] = {
-        ...(registeredAt !== null ? { registeredAt } : {}),
-        ...(completedAt !== null ? { completedAt } : {}),
-      } as StateEntry;
+        ...(ts.registeredAt !== null ? { registeredAt: ts.registeredAt } : {}),
+        ...(ts.completedAt !== null ? { completedAt: ts.completedAt } : {}),
+      };
     }
   }
 

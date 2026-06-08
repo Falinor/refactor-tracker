@@ -21,4 +21,7 @@ export interface Report {
 
 export interface Reporter {
   report(report: Report): Promise<void>;
+  // When true, the CLI passes the unfiltered Report — used by the JSON reporter
+  // so the on-disk artifact stays a faithful machine copy regardless of view flags.
+  wantsRaw?: boolean;
 }

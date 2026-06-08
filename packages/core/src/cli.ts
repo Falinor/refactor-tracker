@@ -81,9 +81,8 @@ export async function execute(options: ExecuteOptions): Promise<number> {
       showCompleted: !!options.showCompleted,
       sortBy: options.sortBy,
     });
-    for (let i = 0; i < reporters.length; i++) {
-      const isJson = reporterConfigs[i].type === 'json';
-      await reporters[i].report(isJson ? report : filtered);
+    for (const reporter of reporters) {
+      await reporter.report(reporter.wantsRaw ? report : filtered);
     }
   }
 
