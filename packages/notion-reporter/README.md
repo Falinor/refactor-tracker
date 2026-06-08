@@ -5,6 +5,9 @@
 [![CI](https://github.com/Falinor/refactor-tracker/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Falinor/refactor-tracker/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](../../LICENSE)
 
+> [!NOTE]
+> **Beta — pre-1.0.** This reporter tracks `refactor-tracker`'s pre-1.0 release cycle; the config shape may change between minor versions.
+
 A [refactor-tracker](https://www.npmjs.com/package/refactor-tracker) reporter that syncs each snapshot to a Notion database, so your team sees a live page with a donut chart, per-task progress bars, and a details table.
 
 ## Install

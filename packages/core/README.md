@@ -5,6 +5,9 @@
 [![CI](https://github.com/Falinor/refactor-tracker/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Falinor/refactor-tracker/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](../../LICENSE)
 
+> [!NOTE]
+> **Beta — pre-1.0.** The CLI flags, config schema, and reporter API may change between minor releases. Pin an exact version in CI until 1.0 ships.
+
 A language-agnostic CLI that runs configurable **shell detection commands**, counts progress for each tracked refactor, and reports deltas to pluggable outputs. Designed to run in CI (on merge) and locally on demand.
 
 The tool is a **number collector and reporter**. Detection is fully delegated to the shell: a command must print a non-negative integer to stdout — what produces that number (grep, ast-grep, ts-morph, a custom script, …) is up to you.
