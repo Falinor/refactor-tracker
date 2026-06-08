@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.4.0...refactor-tracker-v0.5.0) (2026-06-08)
+
+
+### Features
+
+* **cli:** add --reporter, --id, --no-cache and --cache-path flags ([e0ebcd9](https://github.com/Falinor/refactor-tracker/commit/e0ebcd96ebb740cf96be0b61d6e9347cc279cc8c))
+
+
+### Bug Fixes
+
+* **engine:** preserve registeredAt under --no-cache when cache exists ([62d4da0](https://github.com/Falinor/refactor-tracker/commit/62d4da0c3c37bbcb319642a16b0c5f0163d28cbe))
+* **engine:** preserve registeredAt under --no-cache when cache exists ([28a3878](https://github.com/Falinor/refactor-tracker/commit/28a3878d40ca7f2a7496ac743c81f150cc590807))
+
 ## [0.4.0](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.3.0...refactor-tracker-v0.4.0) (2026-06-08)
 
 
