@@ -3,6 +3,7 @@ import path from 'node:path';
 import type { Reporter, Report } from '../types.js';
 
 export class JsonReporter implements Reporter {
+  readonly wantsRaw = true;
   constructor(readonly output: string) {}
 
   async report(report: Report): Promise<void> {

@@ -97,13 +97,28 @@ Reporter config values that are exactly `$VAR` (e.g. `token: $MY_TOKEN`) are exp
 ```
 refactor-tracker [options]
 
-  -c, --config <path>     Path to config file (default: .refactor-tracker.yml)
-  --dry-run               Run detections and print the report as JSON; do not invoke reporters
-  --fail-on-regression    Exit 1 if any task's done count decreased vs the cache
-  --report-output <path>  Write the full Report as JSON to this path, independent of reporters
+  -c, --config <path>          Path to config file (default: .refactor-tracker.yml)
+  --dry-run                    Run detections and print the report as JSON; do not invoke reporters
+  --fail-on-regression         Exit 1 if any task's done count decreased vs the cache
+  --report-output <path>       Write the full Report as JSON to this path, independent of reporters
+  --reporter <type[:path]>     Override configured reporters; repeatable (e.g. --reporter stdout
+                               --reporter markdown:out.md). `custom` reporters are config-only.
+  --id <id>                    Filter refactors by id; repeatable, OR semantics. Combines with
+                               --tag via AND.
+  --no-cache                   Skip reading and writing the cache file; delta becomes null
+  --cache-path <path>          Override cache location (default: next to the config)
 ```
 
 `--report-output` is useful when a downstream tool (CI script, GitHub Action, dashboard) needs the typed Report alongside whatever reporters fire. Reporters in the config still run; the file is written after detections succeed and works with or without `--dry-run`. The path is resolved against the current working directory.
+
+`--reporter` replaces any reporters declared in the config for that run. Use `stdout` on its own, or `<type>:<path>` for the file-based reporters — handy for a one-off Markdown dump without editing the YAML:
+
+```bash
+refactor-tracker --reporter markdown:./reports/now.md
+refactor-tracker --reporter stdout --reporter json:./reports/now.json
+```
+
+`--no-cache` is convenient in ephemeral environments where caching has no meaning (one-shot CI containers, ad-hoc runs); since `delta` is always `null`, `--fail-on-regression` is effectively a no-op when combined with it. `--cache-path` is useful when you want the cache somewhere other than next to the config (e.g. under a CI artifact directory). The path is resolved against the current working directory.
 
 ### GitHub Action
 

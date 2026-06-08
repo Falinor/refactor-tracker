@@ -3,7 +3,8 @@ import type { Report, TaskResult } from './types.js';
 import { resolveDetection, resolveList, type CommandRunner } from './detect.js';
 import { runCommand } from './runner.js';
 import { readCache, writeCache, type Cache } from './cache.js';
-import { readState, writeState, type State, type StateEntry } from './state.js';
+import { readState, writeState, type State } from './state.js';
+import { resolveTaskTimestamps } from './timestamps.js';
 
 export interface EngineOptions {
   cachePath: string;
@@ -13,22 +14,32 @@ export interface EngineOptions {
   run?: CommandRunner;
   now?: () => Date;
   tagFilter?: string[];
+  idFilter?: string[];
+  noCache?: boolean;
 }
 
 export async function runEngine(config: Config, options: EngineOptions): Promise<Report> {
   const run = options.run ?? runCommand;
   const now = options.now ?? (() => new Date());
   const timestamp = now().toISOString();
-  const cache = await readCache(options.cachePath);
+  const cache = options.noCache ? {} : await readCache(options.cachePath);
   const state = await readState(options.statePath);
 
-  const filter = options.tagFilter;
-  const filterActive = filter !== undefined && filter.length > 0;
-  const filtered = filterActive
-    ? config.refactors.filter((r) => (r.tags ?? []).some((t) => filter.includes(t)))
-    : config.refactors;
+  const tagFilter = options.tagFilter;
+  const tagFilterActive = tagFilter !== undefined && tagFilter.length > 0;
+  const idFilter = options.idFilter;
+  const idFilterActive = idFilter !== undefined && idFilter.length > 0;
+  const filterActive = tagFilterActive || idFilterActive;
+  const filtered = config.refactors.filter((r) => {
+    if (tagFilterActive && !(r.tags ?? []).some((t) => tagFilter.includes(t))) return false;
+    if (idFilterActive && !idFilter.includes(r.id)) return false;
+    return true;
+  });
   if (filterActive && filtered.length === 0) {
-    throw new Error(`No refactors match the requested tags: ${filter.join(', ')}`);
+    const parts: string[] = [];
+    if (tagFilterActive) parts.push(`tags: ${tagFilter.join(', ')}`);
+    if (idFilterActive) parts.push(`ids: ${idFilter.join(', ')}`);
+    throw new Error(`No refactors match the requested filters (${parts.join('; ')})`);
   }
 
   const tasks: TaskResult[] = [];
@@ -49,27 +60,7 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
     const items =
       total - done > 0 ? await resolveList(refactor.detect, run, options.cwd) : undefined;
 
-    const stateEntry = state[refactor.id];
-    let registeredAt: string | null;
-    if (refactor.registeredAt) {
-      registeredAt = refactor.registeredAt;
-    } else if (stateEntry?.registeredAt) {
-      registeredAt = stateEntry.registeredAt;
-    } else if (cache[refactor.id]) {
-      registeredAt = null;
-    } else {
-      registeredAt = timestamp;
-    }
-
-    let completedAt: string | null = stateEntry?.completedAt ?? null;
-    if (!completedAt && total > 0 && done === total) {
-      completedAt = timestamp;
-    }
-
-    const durationDays =
-      registeredAt && completedAt
-        ? Math.floor((Date.parse(completedAt) - Date.parse(registeredAt)) / 86_400_000)
-        : null;
+    const ts = resolveTaskTimestamps(refactor, state[refactor.id], prev, done, total, timestamp);
 
     tasks.push({
       id: refactor.id,
@@ -81,21 +72,19 @@ export async function runEngine(config: Config, options: EngineOptions): Promise
       percentage,
       delta,
       ...(items ? { items } : {}),
-      registeredAt,
-      completedAt,
-      durationDays,
+      ...ts,
     });
     nextCache[refactor.id] = { done, total, timestamp };
 
-    if (registeredAt !== null || completedAt !== null) {
+    if (ts.registeredAt !== null || ts.completedAt !== null) {
       nextState[refactor.id] = {
-        ...(registeredAt !== null ? { registeredAt } : {}),
-        ...(completedAt !== null ? { completedAt } : {}),
-      } as StateEntry;
+        ...(ts.registeredAt !== null ? { registeredAt: ts.registeredAt } : {}),
+        ...(ts.completedAt !== null ? { completedAt: ts.completedAt } : {}),
+      };
     }
   }
 
-  if (!options.dryRun) await writeCache(options.cachePath, nextCache);
+  if (!options.dryRun && !options.noCache) await writeCache(options.cachePath, nextCache);
   if (!options.dryRun) await writeState(options.statePath, nextState);
   return { tasks, timestamp, hasChanges };
 }

@@ -5,8 +5,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { runCommand } from 'citty';
-import { execute, main } from '../src/cli.js';
-import { writeCache } from '../src/cache.js';
+import { execute, main, parseReporterFlag } from '../src/cli.js';
+import { readCache, writeCache } from '../src/cache.js';
 import type { Config } from '../src/config.js';
 import type { Report } from '../src/types.js';
 
@@ -131,6 +131,126 @@ describe('--sort-by', () => {
       rawArgs: ['--config', configPath, '--sort-by', 'bogus', '--dry-run'],
     });
     expect(result).toBe(1);
+  });
+});
+
+describe('--id flag', () => {
+  it('passes repeated --id values into execute as an array (OR filter)', async () => {
+    const taggedPath = path.join(dir, 'tagged.yml');
+    await writeTaggedConfig(taggedPath);
+    const { result } = await runCommand(main, {
+      rawArgs: ['--config', taggedPath, '--id', 'fe', '--id', 'be', '--dry-run'],
+    });
+    expect(result).toBe(0);
+  });
+
+  it('exits 1 with an error when no refactor matches --id', async () => {
+    const taggedPath = path.join(dir, 'tagged.yml');
+    await writeTaggedConfig(taggedPath);
+    const { result } = await runCommand(main, {
+      rawArgs: ['--config', taggedPath, '--id', 'nope', '--dry-run'],
+    });
+    expect(result).toBe(1);
+  });
+});
+
+describe('parseReporterFlag', () => {
+  it('parses bare stdout', () => {
+    expect(parseReporterFlag('stdout')).toEqual({ type: 'stdout' });
+  });
+
+  it('parses type:path for file reporters', () => {
+    expect(parseReporterFlag('json:out.json')).toEqual({ type: 'json', output: 'out.json' });
+    expect(parseReporterFlag('markdown:r.md')).toEqual({ type: 'markdown', output: 'r.md' });
+    expect(parseReporterFlag('html:r.html')).toEqual({ type: 'html', output: 'r.html' });
+  });
+
+  it('preserves colons in the output path', () => {
+    expect(parseReporterFlag('json:a:b.json')).toEqual({ type: 'json', output: 'a:b.json' });
+  });
+
+  it('throws when a file reporter is missing its path', () => {
+    expect(() => parseReporterFlag('json')).toThrow(/requires an output path/);
+  });
+
+  it('throws when stdout is given an output path', () => {
+    expect(() => parseReporterFlag('stdout:foo')).toThrow(/takes no output path/);
+  });
+
+  it('throws on unknown reporter type', () => {
+    expect(() => parseReporterFlag('slack:foo')).toThrow(/Unknown --reporter type/);
+  });
+});
+
+describe('--reporter flag', () => {
+  it('overrides config reporters with a CLI-specified set', async () => {
+    const out = path.join(dir, 'cli-md.md');
+    const { result } = await runCommand(main, {
+      rawArgs: ['--config', configPath, '--reporter', `markdown:${out}`],
+    });
+    expect(result).toBe(0);
+    await expect(access(out)).resolves.toBeUndefined();
+  });
+
+  it('exits 1 on an invalid --reporter value', async () => {
+    const { result } = await runCommand(main, {
+      rawArgs: ['--config', configPath, '--reporter', 'nope', '--dry-run'],
+    });
+    expect(result).toBe(1);
+  });
+});
+
+describe('--no-cache and --cache-path', () => {
+  it('--no-cache leaves an existing cache untouched', async () => {
+    const cachePath = path.join(dir, '.refactor-tracker-cache.json');
+    await writeCache(cachePath, { regressed: { done: 4, total: 5, timestamp: 'old' } });
+    const code = await execute({
+      config: configPath,
+      dryRun: false,
+      failOnRegression: false,
+      noCache: true,
+    });
+    expect(code).toBe(0);
+    expect(await readCache(cachePath)).toEqual({
+      regressed: { done: 4, total: 5, timestamp: 'old' },
+    });
+  });
+
+  it('--no-cache disables regression detection (delta null on every task)', async () => {
+    await writeCache(path.join(dir, '.refactor-tracker-cache.json'), {
+      regressed: { done: 4, total: 5, timestamp: 'old' },
+    });
+    const code = await execute({
+      config: configPath,
+      dryRun: true,
+      failOnRegression: true,
+      noCache: true,
+    });
+    expect(code).toBe(0);
+  });
+
+  it('--cache-path writes the cache to the given location', async () => {
+    const customCache = path.join(dir, 'custom-cache.json');
+    const code = await execute({
+      config: configPath,
+      dryRun: false,
+      failOnRegression: false,
+      cachePath: customCache,
+    });
+    expect(code).toBe(0);
+    await expect(access(customCache)).resolves.toBeUndefined();
+  });
+
+  it('wires --no-cache and --cache-path through citty', async () => {
+    const customCache = path.join(dir, 'cli-cache.json');
+    const { result } = await runCommand(main, {
+      rawArgs: ['--config', configPath, '--cache-path', customCache, '--dry-run'],
+    });
+    expect(result).toBe(0);
+    const { result: result2 } = await runCommand(main, {
+      rawArgs: ['--config', configPath, '--no-cache', '--dry-run'],
+    });
+    expect(result2).toBe(0);
   });
 });
 
