@@ -1,0 +1,12 @@
+reporters:
+  - type: stdout
+
+refactors:
+  - id: mocha-to-vitest
+    name: Migrate test suite from Mocha to Vitest
+    description: Mocha *.spec.js files vs Vitest *.test.ts files
+    detect:
+      remaining:
+        command: "find tests -name '*.spec.js' | wc -l | tr -d ' '"
+      done:
+        command: "find tests -name '*.test.ts' | wc -l | tr -d ' '"

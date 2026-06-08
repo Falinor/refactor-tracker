@@ -20,7 +20,7 @@ body:
   - type: textarea
     id: config
     attributes:
-      label: Minimal `.tech-refactors.yml`
+      label: Minimal `.refactor-tracker.yml`
       description: The smallest config that triggers the issue. Redact any sensitive paths or commands.
       render: yaml
     validations:

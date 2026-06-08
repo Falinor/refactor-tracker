@@ -1,0 +1,12 @@
+reporters:
+  - type: stdout
+
+refactors:
+  - id: commonjs-to-esm
+    name: Migrate CommonJS modules to ESM
+    description: Files using require() vs files using import/export
+    detect:
+      remaining:
+        command: "grep -rl 'require(' src | wc -l | tr -d ' '"
+      done:
+        command: "grep -rlE '^(import|export) ' src | wc -l | tr -d ' '"

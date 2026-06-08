@@ -90,7 +90,7 @@ export const main = defineCommand({
     config: {
       type: 'string',
       description: 'Path to the config file',
-      default: '.tech-refactors.yml',
+      default: '.refactor-tracker.yml',
       alias: ['c'],
     },
     'dry-run': {

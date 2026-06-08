@@ -1,0 +1,12 @@
+reporters:
+  - type: stdout
+
+refactors:
+  - id: class-to-hooks
+    name: Migrate React class components to hooks
+    description: Components still extending React.Component vs total components
+    detect:
+      remaining:
+        command: "grep -rl -E 'extends React\\.Component|extends Component' src | wc -l | tr -d ' '"
+      total:
+        command: "find src -name '*.tsx' | wc -l | tr -d ' '"

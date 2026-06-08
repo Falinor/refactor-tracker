@@ -1,0 +1,12 @@
+reporters:
+  - type: stdout
+
+refactors:
+  - id: redux-to-zustand
+    name: Replace Redux with Zustand
+    description: Store files still on Redux vs files already on Zustand
+    detect:
+      remaining:
+        command: 'grep -rl -E "from ''(react-redux|@reduxjs/toolkit)''" src | wc -l | tr -d '' '''
+      done:
+        command: 'grep -rl "from ''zustand''" src | wc -l | tr -d '' '''

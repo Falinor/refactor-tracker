@@ -9,7 +9,7 @@ Detection is fully delegated to the shell: anything that prints a non-negative i
 
 ## At a glance
 
-Drop a `.tech-refactors.yml` at your repo root:
+Drop a `.refactor-tracker.yml` at your repo root:
 
 ```yaml
 reporters:
@@ -47,6 +47,19 @@ This is a pnpm workspace; each package publishes independently via [release-plea
 | [`packages/notion-reporter`](./packages/notion-reporter) | `refactor-tracker-notion-reporter` | Custom reporter that syncs each snapshot to a Notion database.           |
 
 See each package's README for install, full configuration reference, and API details.
+
+## Examples
+
+Runnable migration scenarios live in [`examples/`](./examples) — each subfolder has a tiny TypeScript source tree, a `.refactor-tracker.yml`, and a README explaining what's tracked:
+
+- [TypeScript strict migration](./examples/ts-strict-migration) (`any` cleanup)
+- [React class → hooks](./examples/class-to-hooks)
+- [Moment → date-fns](./examples/moment-to-date-fns)
+- [Redux → Zustand](./examples/redux-to-zustand)
+- [CommonJS → ESM](./examples/commonjs-to-esm)
+- [Mocha → Vitest](./examples/mocha-to-vitest)
+
+`cd` into any of them and run `pnpm dlx refactor-tracker` to see real output.
 
 ## Contributing
 

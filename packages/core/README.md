@@ -19,7 +19,7 @@ pnpm dlx refactor-tracker
 
 ## Configuration
 
-Create `.tech-refactors.yml` at your repo root (override with `--config <path>`):
+Create `.refactor-tracker.yml` at your repo root (override with `--config <path>`):
 
 ```yaml
 reporters:
@@ -97,7 +97,7 @@ Reporter config values that are exactly `$VAR` (e.g. `token: $MY_TOKEN`) are exp
 ```
 refactor-tracker [options]
 
-  -c, --config <path>     Path to config file (default: .tech-refactors.yml)
+  -c, --config <path>     Path to config file (default: .refactor-tracker.yml)
   --dry-run               Run detections and print the report as JSON; do not invoke reporters
   --fail-on-regression    Exit 1 if any task's done count decreased vs the cache
   --report-output <path>  Write the full Report as JSON to this path, independent of reporters
