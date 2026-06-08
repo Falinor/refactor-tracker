@@ -1,6 +1,6 @@
 {
   "name": "refactor-tracker",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Run configurable shell detections to track and report technical-refactor progress.",
   "keywords": [
     "cli",
