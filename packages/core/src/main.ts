@@ -1,10 +1,13 @@
 import { writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { defineCommand } from 'citty';
 import { loadConfig, type ReporterConfig } from './config.js';
 import { runEngine } from './engine.js';
 import { createReporters } from './reporters/index.js';
 import { applyView } from './view.js';
+
+const pkg = createRequire(import.meta.url)('../package.json') as { version: string };
 
 export interface ExecuteOptions {
   config: string;
@@ -112,6 +115,7 @@ function collectRepeatedFlag(rawArgs: string[], flag: string): string[] {
 export const main = defineCommand({
   meta: {
     name: 'refactor-tracker',
+    version: pkg.version,
     description:
       'Run configurable shell detections to track and report technical-refactor progress.',
   },
