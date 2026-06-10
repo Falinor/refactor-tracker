@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { runCommand } from 'citty';
-import { execute, main, parseReporterFlag } from '../src/cli.js';
+import { execute, main, parseReporterFlag } from '../src/main.js';
 import { readCache, writeCache } from '../src/cache.js';
 import type { Config } from '../src/config.js';
 import type { Report } from '../src/types.js';
