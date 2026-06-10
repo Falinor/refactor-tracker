@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.0](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.5.1...refactor-tracker-v0.6.0) (2026-06-10)
+
+
+### Features
+
+* **cli:** add --version flag ([d28f597](https://github.com/Falinor/refactor-tracker/commit/d28f597d42b7d3a1334fe376b5c507206d4b33f7))
+* **cli:** add --version flag ([f0360ce](https://github.com/Falinor/refactor-tracker/commit/f0360ce70aa0deec593b3cac95f45fa9bd16d812))
+
+
+### Bug Fixes
+
+* **html-reporter:** render remaining items in tag-grouped layout ([19e8ac6](https://github.com/Falinor/refactor-tracker/commit/19e8ac67687f8521732d9ad8951483e367e7989c))
+* **html-reporter:** render remaining items in tag-grouped layout ([eb5993f](https://github.com/Falinor/refactor-tracker/commit/eb5993f32c0341a770b2531017952934f0917e05))
+
 ## [0.5.1](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.5.0...refactor-tracker-v0.5.1) (2026-06-10)
 
 
