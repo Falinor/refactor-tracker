@@ -58,6 +58,14 @@ describe('citty wiring', () => {
     });
     expect(result).toBe(1);
   });
+
+  it('exposes the package version on meta so citty can render --version', async () => {
+    const pkg = JSON.parse(await readFile(path.join(here, '..', 'package.json'), 'utf8')) as {
+      version: string;
+    };
+    const meta = typeof main.meta === 'function' ? await main.meta() : await main.meta;
+    expect(meta?.version).toBe(pkg.version);
+  });
 });
 
 async function writeTaggedConfig(p: string): Promise<void> {
