@@ -399,6 +399,34 @@ describe('formatHtml grouped by tag', () => {
     expect(html).not.toContain('<h2>');
     expect((html.match(/<ul class="refactors">/g) ?? []).length).toBe(1);
   });
+
+  it('renders the remaining-items <details> inside a tag group, like the flat layout', () => {
+    const r: Report = {
+      timestamp: '2026-05-28T12:00:00.000Z',
+      hasChanges: true,
+      tasks: [
+        {
+          id: 'a',
+          name: 'FE',
+          tags: ['frontend'],
+          done: 1,
+          total: 3,
+          percentage: 33,
+          delta: null,
+          items: ['src/foo.ts', 'src/bar.ts'],
+          registeredAt: null,
+          completedAt: null,
+          durationDays: null,
+        },
+      ],
+    };
+    const html = formatHtml(r);
+    expect(html).toContain('<section class="tag-group">');
+    expect(html).toContain('<details class="items">');
+    expect(html).toContain('<summary>2 remaining</summary>');
+    expect(html).toContain('<li>src/foo.ts</li>');
+    expect(html).toContain('<li>src/bar.ts</li>');
+  });
 });
 
 describe('html milestone columns', () => {

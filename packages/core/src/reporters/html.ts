@@ -165,6 +165,16 @@ const TEMPLATE = `<!DOCTYPE html>
               <% } %>
             </div>
           </dl>
+          <% if (task.items) { %>
+          <details class="items">
+            <summary><%= task.items.length %> remaining</summary>
+            <ul>
+              <% task.items.forEach(function (item) { %>
+              <li><%= item %></li>
+              <% }) %>
+            </ul>
+          </details>
+          <% } %>
         </li>
         <% }) %>
       </ul>
