@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.5.0...refactor-tracker-v0.5.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* **cli:** make global CLI entry symlink-safe ([ef474cd](https://github.com/Falinor/refactor-tracker/commit/ef474cd21be43d463625d0efb72229ff73b79f20))
+
 ## [0.5.0](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.4.0...refactor-tracker-v0.5.0) (2026-06-08)
 
 
