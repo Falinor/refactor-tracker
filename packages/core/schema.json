@@ -11,9 +11,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "type"
-        ],
+        "required": ["type"],
         "additionalProperties": {}
       }
     },
@@ -62,10 +60,7 @@
                     "const": true
                   }
                 },
-                "required": [
-                  "command",
-                  "binary"
-                ],
+                "required": ["command", "binary"],
                 "additionalProperties": false
               },
               {
@@ -78,9 +73,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "command"
-                    ],
+                    "required": ["command"],
                     "additionalProperties": false
                   },
                   "remaining": {
@@ -90,9 +83,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "command"
-                    ],
+                    "required": ["command"],
                     "additionalProperties": false
                   },
                   "total": {
@@ -102,9 +93,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "command"
-                    ],
+                    "required": ["command"],
                     "additionalProperties": false
                   },
                   "list": {
@@ -114,9 +103,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "command"
-                    ],
+                    "required": ["command"],
                     "additionalProperties": false
                   }
                 },
@@ -125,18 +112,12 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "detect"
-        ],
+        "required": ["id", "name", "detect"],
         "additionalProperties": false
       }
     }
   },
-  "required": [
-    "refactors"
-  ],
+  "required": ["refactors"],
   "additionalProperties": false,
   "$id": "https://raw.githubusercontent.com/Falinor/refactor-tracker/main/packages/core/schema.json",
   "title": "refactor-tracker config",
