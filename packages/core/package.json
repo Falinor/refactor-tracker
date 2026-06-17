@@ -31,7 +31,8 @@
   "files": [
     "LICENSE",
     "README.md",
-    "dist"
+    "dist",
+    "schema.json"
   ],
   "type": "module",
   "main": "./dist/index.js",
@@ -43,7 +44,8 @@
     }
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && node scripts/build-schema.ts",
+    "build:schema": "node scripts/build-schema.ts",
     "test": "vitest run",
     "dev": "vitest"
   },
