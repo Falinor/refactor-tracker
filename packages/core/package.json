@@ -3,16 +3,26 @@
   "version": "0.6.0",
   "description": "Run configurable shell detections to track and report technical-refactor progress.",
   "keywords": [
+    "burndown",
+    "ci",
     "cli",
+    "code-quality",
     "codebase",
+    "codemod",
     "dashboard",
+    "debt",
+    "deprecation",
     "metrics",
     "migration",
+    "modernization",
+    "monorepo",
     "progress",
     "refactor",
     "refactoring",
+    "reporter",
     "tech-debt",
-    "technical-debt"
+    "technical-debt",
+    "tracker"
   ],
   "homepage": "https://github.com/Falinor/refactor-tracker/tree/main/packages/core#readme",
   "bugs": {
