@@ -1,0 +1,234 @@
+<h2>What the Notion page could look like</h2>
+<p class="subtitle">
+  Mockup of a single Notion page rendering the refactor-tracker snapshot. Sample data for
+  illustration.
+</p>
+
+<div class="mockup">
+  <div class="mockup-header">Refactor Status — Notion page</div>
+  <div
+    class="mockup-body"
+    style="
+      padding: 24px;
+      background: #fff;
+      color: #1f1f1f;
+      font-family: -apple-system, system-ui, sans-serif;
+    "
+  >
+    <div style="font-size: 28px; font-weight: 700; margin-bottom: 4px">🧱 Refactor Status</div>
+    <div style="color: #787774; font-size: 13px; margin-bottom: 28px">
+      Last run · 2026-06-02 09:14 · 4 of 7 tasks complete
+    </div>
+
+    <!-- HEADLINE: Donut -->
+    <div
+      style="
+        display: flex;
+        gap: 32px;
+        align-items: center;
+        margin-bottom: 36px;
+        padding: 20px;
+        border: 1px solid #e9e9e7;
+        border-radius: 6px;
+      "
+    >
+      <svg width="140" height="140" viewBox="0 0 42 42">
+        <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#eaeaea" stroke-width="6" />
+        <circle
+          cx="21"
+          cy="21"
+          r="15.915"
+          fill="transparent"
+          stroke="#2eaadc"
+          stroke-width="6"
+          stroke-dasharray="62 38"
+          stroke-dashoffset="25"
+          transform="rotate(-90 21 21)"
+        />
+        <text x="21" y="22" text-anchor="middle" font-size="7" font-weight="700" fill="#1f1f1f">
+          62%
+        </text>
+        <text x="21" y="28" text-anchor="middle" font-size="3" fill="#787774">overall</text>
+      </svg>
+      <div>
+        <div
+          style="
+            font-size: 14px;
+            color: #787774;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+          "
+        >
+          Overall completion
+        </div>
+        <div style="font-size: 32px; font-weight: 700">
+          312 / 504
+          <span style="font-size: 14px; color: #787774; font-weight: 400">items done</span>
+        </div>
+        <div style="margin-top: 8px; font-size: 13px; color: #0f7b3a">▲ 18 since last run</div>
+      </div>
+    </div>
+
+    <!-- PROGRESS BARS -->
+    <div
+      style="
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #787774;
+        margin-bottom: 12px;
+      "
+    >
+      Per-task progress
+    </div>
+    <div style="display: grid; gap: 10px; margin-bottom: 36px">
+      <!-- bar template -->
+      <div
+        style="display: grid; grid-template-columns: 200px 1fr 80px; gap: 12px; align-items: center"
+      >
+        <div style="font-size: 13px">Drop legacy auth middleware</div>
+        <div style="background: #f1f1ef; height: 10px; border-radius: 5px; overflow: hidden">
+          <div style="background: #0f7b3a; width: 100%; height: 100%"></div>
+        </div>
+        <div style="font-size: 13px; color: #787774; text-align: right">100% ✓</div>
+      </div>
+      <div
+        style="display: grid; grid-template-columns: 200px 1fr 80px; gap: 12px; align-items: center"
+      >
+        <div style="font-size: 13px">Migrate to ESM</div>
+        <div style="background: #f1f1ef; height: 10px; border-radius: 5px; overflow: hidden">
+          <div style="background: #2eaadc; width: 84%; height: 100%"></div>
+        </div>
+        <div style="font-size: 13px; color: #787774; text-align: right">84%</div>
+      </div>
+      <div
+        style="display: grid; grid-template-columns: 200px 1fr 80px; gap: 12px; align-items: center"
+      >
+        <div style="font-size: 13px">Replace lodash usage</div>
+        <div style="background: #f1f1ef; height: 10px; border-radius: 5px; overflow: hidden">
+          <div style="background: #2eaadc; width: 71%; height: 100%"></div>
+        </div>
+        <div style="font-size: 13px; color: #787774; text-align: right">71%</div>
+      </div>
+      <div
+        style="display: grid; grid-template-columns: 200px 1fr 80px; gap: 12px; align-items: center"
+      >
+        <div style="font-size: 13px">Convert tests to Vitest</div>
+        <div style="background: #f1f1ef; height: 10px; border-radius: 5px; overflow: hidden">
+          <div style="background: #d9730d; width: 42%; height: 100%"></div>
+        </div>
+        <div style="font-size: 13px; color: #787774; text-align: right">42%</div>
+      </div>
+      <div
+        style="display: grid; grid-template-columns: 200px 1fr 80px; gap: 12px; align-items: center"
+      >
+        <div style="font-size: 13px">Strict TS in /server</div>
+        <div style="background: #f1f1ef; height: 10px; border-radius: 5px; overflow: hidden">
+          <div style="background: #d9730d; width: 28%; height: 100%"></div>
+        </div>
+        <div style="font-size: 13px; color: #787774; text-align: right">28%</div>
+      </div>
+      <div
+        style="display: grid; grid-template-columns: 200px 1fr 80px; gap: 12px; align-items: center"
+      >
+        <div style="font-size: 13px">Remove deprecated APIs</div>
+        <div style="background: #f1f1ef; height: 10px; border-radius: 5px; overflow: hidden">
+          <div style="background: #e03e3e; width: 8%; height: 100%"></div>
+        </div>
+        <div style="font-size: 13px; color: #787774; text-align: right">8%</div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div
+      style="
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #787774;
+        margin-bottom: 12px;
+      "
+    >
+      Details
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px">
+      <thead>
+        <tr style="border-bottom: 1px solid #e9e9e7; text-align: left; color: #787774">
+          <th style="padding: 8px 12px; font-weight: 500">Task</th>
+          <th style="padding: 8px 12px; font-weight: 500">Done</th>
+          <th style="padding: 8px 12px; font-weight: 500">Remaining</th>
+          <th style="padding: 8px 12px; font-weight: 500">Δ</th>
+          <th style="padding: 8px 12px; font-weight: 500">Registered</th>
+          <th style="padding: 8px 12px; font-weight: 500">Completed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid #f1f1ef">
+          <td style="padding: 8px 12px">Drop legacy auth middleware</td>
+          <td style="padding: 8px 12px">48</td>
+          <td style="padding: 8px 12px">0</td>
+          <td style="padding: 8px 12px; color: #0f7b3a">+4</td>
+          <td style="padding: 8px 12px; color: #787774">2026-02-10</td>
+          <td style="padding: 8px 12px; color: #787774">2026-05-28</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f1ef">
+          <td style="padding: 8px 12px">Migrate to ESM</td>
+          <td style="padding: 8px 12px">102</td>
+          <td style="padding: 8px 12px">19</td>
+          <td style="padding: 8px 12px; color: #0f7b3a">+7</td>
+          <td style="padding: 8px 12px; color: #787774">2026-01-15</td>
+          <td style="padding: 8px 12px; color: #787774">—</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f1ef">
+          <td style="padding: 8px 12px">Replace lodash usage</td>
+          <td style="padding: 8px 12px">62</td>
+          <td style="padding: 8px 12px">25</td>
+          <td style="padding: 8px 12px; color: #0f7b3a">+3</td>
+          <td style="padding: 8px 12px; color: #787774">2026-03-02</td>
+          <td style="padding: 8px 12px; color: #787774">—</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f1ef">
+          <td style="padding: 8px 12px">Convert tests to Vitest</td>
+          <td style="padding: 8px 12px">34</td>
+          <td style="padding: 8px 12px">47</td>
+          <td style="padding: 8px 12px; color: #787774">0</td>
+          <td style="padding: 8px 12px; color: #787774">2026-04-01</td>
+          <td style="padding: 8px 12px; color: #787774">—</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f1ef">
+          <td style="padding: 8px 12px">Strict TS in /server</td>
+          <td style="padding: 8px 12px">22</td>
+          <td style="padding: 8px 12px">56</td>
+          <td style="padding: 8px 12px; color: #0f7b3a">+2</td>
+          <td style="padding: 8px 12px; color: #787774">2026-05-10</td>
+          <td style="padding: 8px 12px; color: #787774">—</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f1f1ef">
+          <td style="padding: 8px 12px">Remove deprecated APIs</td>
+          <td style="padding: 8px 12px">5</td>
+          <td style="padding: 8px 12px">60</td>
+          <td style="padding: 8px 12px; color: #787774">0</td>
+          <td style="padding: 8px 12px; color: #787774">2026-05-25</td>
+          <td style="padding: 8px 12px; color: #787774">—</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 12px">Drop deprecated config keys</td>
+          <td style="padding: 8px 12px">39</td>
+          <td style="padding: 8px 12px">0</td>
+          <td style="padding: 8px 12px; color: #787774">0</td>
+          <td style="padding: 8px 12px; color: #787774">2026-01-08</td>
+          <td style="padding: 8px 12px; color: #787774">2026-04-18</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top: 24px">
+  This is one Notion page with three sections: a headline donut, per-task progress bars, and a
+  details table. All driven by one Notion database the tool keeps in sync.<br /><br />
+  Does this layout look right, or would you like to drop / reorder / add sections?
+</p>
