@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { readState, writeState } from '../src/state.js';
+import { STORE_VERSION } from '../src/jsonStore.js';
 
 async function withTempDir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
   const dir = await mkdtemp(path.join(tmpdir(), 'rt-state-'));
@@ -54,6 +55,16 @@ describe('state', () => {
       };
       await writeState(statePath, input);
       expect(await readState(statePath)).toEqual(input);
+    });
+  });
+
+  it('writes a versioned envelope to disk', async () => {
+    await withTempDir(async (dir) => {
+      const statePath = path.join(dir, 'state.json');
+      const input = { a: { registeredAt: '2026-03-12T10:00:00.000Z' } };
+      await writeState(statePath, input);
+      const onDisk = JSON.parse(await readFile(statePath, 'utf8'));
+      expect(onDisk).toEqual({ version: STORE_VERSION, entries: input });
     });
   });
 
