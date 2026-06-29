@@ -37,6 +37,7 @@ Pipeline (one direction, each stage in its own file):
 - **`runner.ts`** — the only real side-effecting shell call: `execa(command, { shell: true, reject: false })`. `cwd` is the config file's directory.
 - **`reporters/index.ts`** — factory mapping `type` → reporter. Built-ins: `stdout` (default when none configured), `json`, `markdown`, `html`. `custom` dynamically imports a module whose default export implements `Reporter`.
 - **`index.ts`** — the public API surface, and it only re-exports types (`Report`, `TaskResult`, `Reporter`). Custom reporters import `Reporter` from here.
+- **`commands/init.ts`** — the `init` command: scaffolds a `.refactor-tracker.yml` via `@clack/prompts` (non-TTY or `--yes` falls back to writing defaults). `renderConfig` (in `commands/init-template.ts`) is a pure template; `createInitCommand(version)` is a citty command. Because citty 0.2.2 runs a parent's `run` _even after_ a subcommand matches, `cli.ts` dispatches `init` as a **top-level command** (`argv[0] === 'init'`) rather than registering it under `main.subCommands`.
 
 ### Conventions that bite
 

@@ -1,13 +1,20 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { runCommand } from 'citty';
 import {
   DEFAULT_CONFIG_PATH,
+  createInitCommand,
   gatherOptions,
   runInit,
   type InitPrompter,
 } from '../src/commands/init.js';
+import { main } from '../src/main.js';
+
+afterEach(() => {
+  process.exitCode = 0; // createInitCommand sets exitCode on error paths
+});
 
 const SCHEMA = 'https://cdn.jsdelivr.net/npm/refactor-tracker@9.9.9/schema.json';
 
@@ -170,6 +177,49 @@ describe('runInit', () => {
       );
       expect(res.wrote).toBe(false);
       expect(await readFile(p, 'utf8')).toBe('old');
+    });
+  });
+});
+
+describe('init command', () => {
+  it('writes a config via --yes and exits 0', async () => {
+    await withTempDir(async (dir) => {
+      const target = path.join(dir, '.refactor-tracker.yml');
+      const { result } = await runCommand(createInitCommand('9.9.9'), {
+        rawArgs: ['--config', target, '--yes'],
+      });
+      expect(result).toBe(0);
+      const written = await readFile(target, 'utf8');
+      expect(written).toContain('# yaml-language-server: $schema=');
+      expect(written).toContain('refactor-tracker@9.9.9/schema.json');
+      expect(written).toContain('id: example-counts');
+    });
+  });
+
+  it('exits 1 when the target exists and --force is absent', async () => {
+    await withTempDir(async (dir) => {
+      const target = path.join(dir, '.refactor-tracker.yml');
+      await writeFile(target, 'old', 'utf8');
+      const { result } = await runCommand(createInitCommand('9.9.9'), {
+        rawArgs: ['--config', target, '--yes'],
+      });
+      expect(result).toBe(1);
+      expect(await readFile(target, 'utf8')).toBe('old');
+    });
+  });
+});
+
+describe('bare command still runs detection', () => {
+  it('routes flag-only args to detection, not init', async () => {
+    await withTempDir(async (dir) => {
+      const cfg = path.join(dir, 'config.yml');
+      await writeFile(
+        cfg,
+        'refactors:\n  - id: a\n    name: A\n    detect:\n      done: { command: "echo 1" }\n      total: { command: "echo 2" }\n',
+        'utf8',
+      );
+      const { result } = await runCommand(main, { rawArgs: ['--config', cfg, '--dry-run'] });
+      expect(result).toBe(0);
     });
   });
 });

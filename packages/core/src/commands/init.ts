@@ -1,5 +1,7 @@
 import { writeFile, access } from 'node:fs/promises';
 import path from 'node:path';
+import { defineCommand } from 'citty';
+import { intro, outro, cancel, text, multiselect, select, confirm, isCancel } from '@clack/prompts';
 import { renderConfig, type ExampleKind, type ReporterKind } from './init-template.js';
 
 export const DEFAULT_CONFIG_PATH = '.refactor-tracker.yml';
@@ -97,4 +99,111 @@ export async function runInit(options: InitOptions, ctx: RunInitContext): Promis
   });
   await writeFile(targetPath, content, 'utf8');
   return { wrote: true, targetPath };
+}
+
+function requireValue<T>(value: T | symbol): T {
+  if (isCancel(value)) throw new InitCancelled();
+  return value as T;
+}
+
+export const clackPrompter: InitPrompter = {
+  async configPath(defaultPath) {
+    return requireValue(
+      await text({
+        message: 'Config file path',
+        placeholder: defaultPath,
+        defaultValue: defaultPath,
+      }),
+    );
+  },
+  async examples() {
+    return requireValue(
+      await multiselect({
+        message: 'Which example detectors should I include?',
+        options: [
+          { value: 'counts', label: 'counts (done/total)' },
+          { value: 'remaining', label: 'remaining (+ total)' },
+          { value: 'binary', label: 'binary (exit code)' },
+        ],
+        initialValues: ['counts', 'remaining', 'binary'],
+        required: true,
+      }),
+    ) as ExampleKind[];
+  },
+  async reporter() {
+    return requireValue(
+      await select({
+        message: 'Default reporter?',
+        options: [
+          { value: 'stdout', label: 'stdout (terminal)' },
+          { value: 'json', label: 'json file' },
+          { value: 'markdown', label: 'markdown file' },
+          { value: 'html', label: 'html file' },
+          { value: 'none', label: 'none (configure later)' },
+        ],
+        initialValue: 'stdout',
+      }),
+    ) as ReporterKind;
+  },
+  async confirmOverwrite(targetPath) {
+    return requireValue(await confirm({ message: `${targetPath} exists. Overwrite?` }));
+  },
+};
+
+export function createInitCommand(version: string) {
+  return defineCommand({
+    meta: { name: 'init', description: 'Scaffold a .refactor-tracker.yml config file' },
+    args: {
+      config: {
+        type: 'string',
+        description: 'Path for the generated config',
+        alias: ['c'],
+        valueHint: 'path',
+      },
+      reporter: {
+        type: 'string',
+        description: 'Default reporter: stdout | json | markdown | html | none',
+        valueHint: 'type',
+      },
+      yes: {
+        type: 'boolean',
+        description: 'Skip prompts; write defaults',
+        alias: ['y'],
+        default: false,
+      },
+      force: { type: 'boolean', description: 'Overwrite an existing config file', default: false },
+    },
+    async run({ args }) {
+      const schemaUrl = `https://cdn.jsdelivr.net/npm/refactor-tracker@${version}/schema.json`;
+      const isTTY = !!process.stdout.isTTY;
+      const interactive = isTTY && !args.yes;
+      if (interactive) intro('refactor-tracker init');
+      try {
+        const options = await gatherOptions(args as InitArgs, { prompter: clackPrompter, isTTY });
+        const result = await runInit(options, {
+          cwd: process.cwd(),
+          schemaUrl,
+          interactive,
+          prompter: clackPrompter,
+        });
+        if (!result.wrote) {
+          if (interactive) cancel('Cancelled — no file written.');
+          return 0;
+        }
+        const msg = `Wrote ${options.configPath}. Run \`refactor-tracker\` to see your first report.`;
+        if (interactive) outro(msg);
+        else console.log(msg);
+        return 0;
+      } catch (err) {
+        if (err instanceof InitCancelled) {
+          cancel('Cancelled — no file written.');
+          process.exitCode = 130;
+          return 130;
+        }
+        console.error(err instanceof Error ? err.message : String(err));
+        process.exitCode = 1;
+        return 1;
+      }
+    },
+  });
 }
