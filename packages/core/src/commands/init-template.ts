@@ -14,7 +14,7 @@ const EXAMPLE_BLOCKS: Record<ExampleKind, string> = {
     detect:
       done: { command: "grep -rl 'newApi(' src | wc -l" }
       total: { command: "grep -rl 'Api(' src | wc -l" }`,
-  remaining: `  # remaining shape: count what's left (total is inferred when paired).
+  remaining: `  # remaining shape: count what's left; pair with total (done is inferred).
   - id: example-remaining
     name: Remove deprecated helper
     detect:

@@ -152,7 +152,7 @@ export const clackPrompter: InitPrompter = {
 
 export function createInitCommand(version: string) {
   return defineCommand({
-    meta: { name: 'init', description: 'Scaffold a .refactor-tracker.yml config file' },
+    meta: { name: 'init', version, description: 'Scaffold a .refactor-tracker.yml config file' },
     args: {
       config: {
         type: 'string',
@@ -200,7 +200,9 @@ export function createInitCommand(version: string) {
           process.exitCode = 130;
           return 130;
         }
-        console.error(err instanceof Error ? err.message : String(err));
+        const message = err instanceof Error ? err.message : String(err);
+        if (interactive) cancel(message);
+        else console.error(message);
         process.exitCode = 1;
         return 1;
       }
