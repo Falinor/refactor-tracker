@@ -5,4 +5,4 @@ dist/
 .claude/settings.local.json
 .superpowers/
 docs/specs/
-docs/superpowers/plans/
+docs/superpowers/
