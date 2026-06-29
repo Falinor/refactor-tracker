@@ -60,6 +60,7 @@
     "dev": "vitest"
   },
   "dependencies": {
+    "@clack/prompts": "^1.6.0",
     "citty": "0.2.2",
     "eta": "^4.6.0",
     "execa": "9.6.1",

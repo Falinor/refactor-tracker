@@ -36,6 +36,22 @@ Then run `pnpm dlx refactor-tracker` — locally, in CI on merge, or both. Each 
 
 Milestones (`registeredAt`, sticky `completedAt`) are persisted in `.refactor-tracker-state.json` next to the config. Unlike the cache, **commit this file** so milestones travel with the codebase.
 
+## Scaffold a config
+
+New to a repo? Generate a starter `.refactor-tracker.yml` instead of writing it by hand:
+
+```bash
+pnpm dlx refactor-tracker init
+```
+
+It prompts for the config path, which example detectors to include (counts / remaining / binary), and a default reporter, then writes a commented config with a `# yaml-language-server: $schema=…` line for editor autocomplete. For CI or scripted setup, skip the prompts:
+
+```bash
+refactor-tracker init --yes                # write defaults, no prompts
+refactor-tracker init --reporter markdown  # preset the reporter
+refactor-tracker init --force              # overwrite an existing file
+```
+
 ## Data handling
 
 The tool runs only the shell commands you configure, in the directory of your config file. It does not phone home, collect telemetry, or send your code anywhere. The only network calls it makes are the ones explicitly performed by reporters you opt into (e.g. the Notion reporter posting to the Notion API).
