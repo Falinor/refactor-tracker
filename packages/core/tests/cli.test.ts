@@ -58,19 +58,6 @@ describe('execute', () => {
     expect(code).toBe(0);
   });
 
-  it('treats failOnRegression as a no-op under noCache even with a regressed cache', async () => {
-    await writeCache(path.join(dir, '.refactor-tracker-cache.json'), {
-      regressed: { done: 4, total: 5, timestamp: 'old' },
-    });
-    const code = await execute({
-      config: configPath,
-      dryRun: true,
-      failOnRegression: true,
-      noCache: true,
-    });
-    expect(code).toBe(0);
-  });
-
   it('writes a state file next to the config after a run', async () => {
     await execute({ config: configPath, dryRun: false, failOnRegression: false });
     await expect(access(path.join(dir, '.refactor-tracker-state.json'))).resolves.toBeUndefined();

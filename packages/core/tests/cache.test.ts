@@ -49,4 +49,12 @@ describe('cache', () => {
       expect(await readCache(file)).toEqual(data);
     });
   });
+
+  it('reads a corrupt (non-object) cache file as an empty store', async () => {
+    await withTempDir(async (dir) => {
+      const file = path.join(dir, 'cache.json');
+      await writeFile(file, 'null', 'utf8');
+      expect(await readCache(file)).toEqual({});
+    });
+  });
 });

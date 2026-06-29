@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { readFile } from 'node:fs/promises';
 import { readState, writeState } from '../src/state.js';
 import { STORE_VERSION } from '../src/jsonStore.js';
 
