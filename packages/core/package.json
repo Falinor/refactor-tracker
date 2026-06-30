@@ -61,7 +61,9 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.6.0",
+    "@commander-js/extra-typings": "^15.0.0",
     "citty": "0.2.2",
+    "commander": "^15.0.0",
     "eta": "^4.6.0",
     "execa": "9.6.1",
     "js-yaml": "4.1.1",
