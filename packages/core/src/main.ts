@@ -1,13 +1,10 @@
 import { writeFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
 import path from 'node:path';
-import { defineCommand } from 'citty';
+import { Command, Option } from '@commander-js/extra-typings';
 import { loadConfig, type ReporterConfig } from './config.js';
 import { runEngine } from './engine.js';
 import { createReporters } from './reporters/index.js';
 import { applyView } from './view.js';
-
-const pkg = createRequire(import.meta.url)('../package.json') as { version: string };
 
 export interface ExecuteOptions {
   config: string;
@@ -94,130 +91,63 @@ export async function execute(options: ExecuteOptions): Promise<number> {
   return 0;
 }
 
-function collectRepeatedFlag(rawArgs: string[], flag: string): string[] {
-  const values: string[] = [];
-  const prefix = `${flag}=`;
-  for (let i = 0; i < rawArgs.length; i++) {
-    const a = rawArgs[i];
-    if (a === flag) {
-      const next = rawArgs[i + 1];
-      if (next !== undefined && !next.startsWith('-')) {
-        values.push(next);
-        i++;
-      }
-    } else if (a.startsWith(prefix)) {
-      values.push(a.slice(prefix.length));
-    }
-  }
-  return values;
-}
+const collect = (value: string, previous: string[]): string[] => previous.concat(value);
 
-export const main = defineCommand({
-  meta: {
-    name: 'refactor-tracker',
-    version: pkg.version,
-    description:
+export function configureRun(cmd: Command): Command {
+  return cmd
+    .description(
       'Run configurable shell detections to track and report technical-refactor progress.',
-  },
-  args: {
-    config: {
-      type: 'string',
-      description: 'Path to the config file',
-      default: '.refactor-tracker.yml',
-      alias: ['c'],
-    },
-    'dry-run': {
-      type: 'boolean',
-      description: 'Run detections and print the report; do not invoke reporters',
-      default: false,
-    },
-    'fail-on-regression': {
-      type: 'boolean',
-      description: "Exit 1 if any task's done count decreased vs the cache",
-      default: false,
-    },
-    tag: {
-      type: 'string',
-      description: 'Filter refactors by tag (repeatable, OR semantics: --tag a --tag b)',
-      valueHint: 'name',
-    },
-    id: {
-      type: 'string',
-      description:
-        'Filter refactors by id (repeatable, OR semantics: --id a --id b). Combines with --tag via AND.',
-      valueHint: 'id',
-    },
-    reporter: {
-      type: 'string',
-      description:
-        'Override configured reporters (repeatable): stdout, or json:<path> / markdown:<path> / html:<path>',
-      valueHint: 'type[:path]',
-    },
-    'show-completed': {
-      type: 'boolean',
-      description: 'Include refactors that have already reached 100% in reporter output',
-      default: false,
-    },
-    'sort-by': {
-      type: 'string',
-      description:
-        'Sort tasks: registered (oldest first), completed (most recent first), or progress (least done first)',
-      valueHint: 'registered|completed|progress',
-    },
-    'report-output': {
-      type: 'string',
-      description:
-        'Write the full Report as JSON to this path (independent of configured reporters)',
-      valueHint: 'path',
-    },
-    'no-cache': {
-      type: 'boolean',
-      description: 'Skip reading and writing the cache file; delta will be null for every task',
-      default: false,
-    },
-    'cache-path': {
-      type: 'string',
-      description:
-        'Override the cache file path (default: .refactor-tracker-cache.json next to the config)',
-      valueHint: 'path',
-    },
-  },
-  async run({ args, rawArgs }) {
-    const tags = collectRepeatedFlag(rawArgs, '--tag');
-    const ids = collectRepeatedFlag(rawArgs, '--id');
-    const reporterFlags = collectRepeatedFlag(rawArgs, '--reporter');
-    let reporters: ReporterConfig[] | undefined;
-    if (reporterFlags.length > 0) {
-      try {
-        reporters = reporterFlags.map(parseReporterFlag);
-      } catch (err) {
-        console.error(err instanceof Error ? err.message : String(err));
-        process.exitCode = 1;
-        return 1;
+    )
+    .option('-c, --config <path>', 'Path to the config file', '.refactor-tracker.yml')
+    .option('--dry-run', 'Run detections and print the report; do not invoke reporters', false)
+    .option('--fail-on-regression', "Exit 1 if any task's done count decreased vs the cache", false)
+    .option('--tag <name>', 'Filter refactors by tag (repeatable, OR semantics)', collect, [])
+    .option(
+      '--id <id>',
+      'Filter refactors by id (repeatable, OR; combines with --tag via AND)',
+      collect,
+      [],
+    )
+    .option(
+      '--reporter <type[:path]>',
+      'Override configured reporters (repeatable): stdout, json:<path>, markdown:<path>, html:<path>',
+      collect,
+      [],
+    )
+    .option('--show-completed', 'Include refactors already at 100% in reporter output', false)
+    .addOption(
+      new Option('--sort-by <key>', 'Sort tasks').choices(['registered', 'completed', 'progress']),
+    )
+    .option('--report-output <path>', 'Write the full Report as JSON to this path')
+    .option(
+      '--no-cache',
+      'Skip reading and writing the cache file; delta will be null for every task',
+    )
+    .option('--cache-path <path>', 'Override the cache file path')
+    .action(async (opts) => {
+      let reporters: ReporterConfig[] | undefined;
+      if (opts.reporter.length > 0) {
+        try {
+          reporters = opts.reporter.map(parseReporterFlag);
+        } catch (err) {
+          console.error(err instanceof Error ? err.message : String(err));
+          process.exitCode = 1;
+          return;
+        }
       }
-    }
-    const sortBy = args['sort-by'] as string | undefined;
-    if (sortBy !== undefined && !['registered', 'completed', 'progress'].includes(sortBy)) {
-      console.error(
-        `Invalid --sort-by value: ${sortBy}. Expected: registered | completed | progress.`,
-      );
-      process.exitCode = 1;
-      return 1;
-    }
-    const code = await execute({
-      config: args.config,
-      dryRun: args['dry-run'],
-      failOnRegression: args['fail-on-regression'],
-      tags: tags.length > 0 ? tags : undefined,
-      ids: ids.length > 0 ? ids : undefined,
-      reporters,
-      showCompleted: args['show-completed'],
-      sortBy: sortBy as ExecuteOptions['sortBy'] | undefined,
-      reportOutput: args['report-output'] as string | undefined,
-      noCache: args['no-cache'],
-      cachePath: args['cache-path'] as string | undefined,
+      const code = await execute({
+        config: opts.config,
+        dryRun: opts.dryRun,
+        failOnRegression: opts.failOnRegression,
+        tags: opts.tag.length > 0 ? opts.tag : undefined,
+        ids: opts.id.length > 0 ? opts.id : undefined,
+        reporters,
+        showCompleted: opts.showCompleted,
+        sortBy: opts.sortBy,
+        reportOutput: opts.reportOutput,
+        noCache: !opts.cache,
+        cachePath: opts.cachePath,
+      });
+      if (code !== 0) process.exitCode = code;
     });
-    if (code !== 0) process.exitCode = code;
-    return code;
-  },
-});
+}

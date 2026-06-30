@@ -4,8 +4,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
-import { runCommand } from 'citty';
-import { execute, main, parseReporterFlag } from '../src/main.js';
+import { execute, parseReporterFlag } from '../src/main.js';
+import { buildProgram } from '../src/program.js';
+import { runCli } from './cli-helper.js';
 import { readCache, writeCache } from '../src/cache.js';
 import type { Config } from '../src/config.js';
 import type { Report } from '../src/types.js';
@@ -24,7 +25,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   vi.restoreAllMocks();
-  process.exitCode = 0; // run() sets this on regression; reset between tests
+  process.exitCode = 0; // actions set this on error paths; reset between tests
   await rm(dir, { recursive: true, force: true });
 });
 
@@ -64,23 +65,27 @@ describe('execute', () => {
   });
 });
 
-describe('citty wiring', () => {
+describe('commander wiring', () => {
   it('parses --dry-run and --fail-on-regression and returns the exit code', async () => {
     await writeCache(path.join(dir, '.refactor-tracker-cache.json'), {
       regressed: { done: 4, total: 5, timestamp: 'old' },
     });
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', configPath, '--fail-on-regression', '--dry-run'],
-    });
-    expect(result).toBe(1);
+    expect(await runCli(['--config', configPath, '--fail-on-regression', '--dry-run'])).toBe(1);
   });
 
-  it('exposes the package version on meta so citty can render --version', async () => {
-    const pkg = JSON.parse(await readFile(path.join(here, '..', 'package.json'), 'utf8')) as {
-      version: string;
-    };
-    const meta = typeof main.meta === 'function' ? await main.meta() : await main.meta;
-    expect(meta?.version).toBe(pkg.version);
+  it('renders --version with the package version', async () => {
+    const out: string[] = [];
+    const program = buildProgram('9.9.9')
+      .exitOverride()
+      .configureOutput({ writeOut: (s) => out.push(s), writeErr: () => {} });
+    await expect(program.parseAsync(['--version'], { from: 'user' })).rejects.toMatchObject({
+      code: 'commander.version',
+    });
+    expect(out.join('')).toContain('9.9.9');
+  });
+
+  it('runs detection under the explicit `run` alias', async () => {
+    expect(await runCli(['run', '--config', configPath, '--dry-run'])).toBe(0);
   });
 });
 
@@ -108,53 +113,37 @@ describe('--tag flag', () => {
   it('passes repeated --tag values into execute as an array (OR filter)', async () => {
     const taggedPath = path.join(dir, 'tagged.yml');
     await writeTaggedConfig(taggedPath);
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', taggedPath, '--tag', 'frontend', '--tag', 'backend', '--dry-run'],
-    });
-    expect(result).toBe(0);
+    expect(
+      await runCli(['--config', taggedPath, '--tag', 'frontend', '--tag', 'backend', '--dry-run']),
+    ).toBe(0);
   });
 
   it('accepts --tag=value form', async () => {
     const taggedPath = path.join(dir, 'tagged.yml');
     await writeTaggedConfig(taggedPath);
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', taggedPath, '--tag=frontend', '--dry-run'],
-    });
-    expect(result).toBe(0);
+    expect(await runCli(['--config', taggedPath, '--tag=frontend', '--dry-run'])).toBe(0);
   });
 
   it('exits 1 with an error when no refactor matches --tag', async () => {
     const taggedPath = path.join(dir, 'tagged.yml');
     await writeTaggedConfig(taggedPath);
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', taggedPath, '--tag', 'nope', '--dry-run'],
-    });
-    expect(result).toBe(1);
+    expect(await runCli(['--config', taggedPath, '--tag', 'nope', '--dry-run'])).toBe(1);
   });
 });
 
 describe('--show-completed', () => {
-  it('forwards the flag through citty into execute', async () => {
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', configPath, '--show-completed', '--dry-run'],
-    });
-    expect(result).toBe(0);
+  it('forwards the flag through commander into execute', async () => {
+    expect(await runCli(['--config', configPath, '--show-completed', '--dry-run'])).toBe(0);
   });
 });
 
 describe('--sort-by', () => {
   it('accepts a valid sort key', async () => {
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', configPath, '--sort-by', 'registered', '--dry-run'],
-    });
-    expect(result).toBe(0);
+    expect(await runCli(['--config', configPath, '--sort-by', 'registered', '--dry-run'])).toBe(0);
   });
 
   it('rejects an invalid sort key with exit 1', async () => {
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', configPath, '--sort-by', 'bogus', '--dry-run'],
-    });
-    expect(result).toBe(1);
+    expect(await runCli(['--config', configPath, '--sort-by', 'bogus', '--dry-run'])).toBe(1);
   });
 });
 
@@ -162,19 +151,13 @@ describe('--id flag', () => {
   it('passes repeated --id values into execute as an array (OR filter)', async () => {
     const taggedPath = path.join(dir, 'tagged.yml');
     await writeTaggedConfig(taggedPath);
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', taggedPath, '--id', 'fe', '--id', 'be', '--dry-run'],
-    });
-    expect(result).toBe(0);
+    expect(await runCli(['--config', taggedPath, '--id', 'fe', '--id', 'be', '--dry-run'])).toBe(0);
   });
 
   it('exits 1 with an error when no refactor matches --id', async () => {
     const taggedPath = path.join(dir, 'tagged.yml');
     await writeTaggedConfig(taggedPath);
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', taggedPath, '--id', 'nope', '--dry-run'],
-    });
-    expect(result).toBe(1);
+    expect(await runCli(['--config', taggedPath, '--id', 'nope', '--dry-run'])).toBe(1);
   });
 });
 
@@ -209,18 +192,12 @@ describe('parseReporterFlag', () => {
 describe('--reporter flag', () => {
   it('overrides config reporters with a CLI-specified set', async () => {
     const out = path.join(dir, 'cli-md.md');
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', configPath, '--reporter', `markdown:${out}`],
-    });
-    expect(result).toBe(0);
+    expect(await runCli(['--config', configPath, '--reporter', `markdown:${out}`])).toBe(0);
     await expect(access(out)).resolves.toBeUndefined();
   });
 
   it('exits 1 on an invalid --reporter value', async () => {
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', configPath, '--reporter', 'nope', '--dry-run'],
-    });
-    expect(result).toBe(1);
+    expect(await runCli(['--config', configPath, '--reporter', 'nope', '--dry-run'])).toBe(1);
   });
 });
 
@@ -265,16 +242,12 @@ describe('--no-cache and --cache-path', () => {
     await expect(access(customCache)).resolves.toBeUndefined();
   });
 
-  it('wires --no-cache and --cache-path through citty', async () => {
+  it('wires --no-cache and --cache-path through commander', async () => {
     const customCache = path.join(dir, 'cli-cache.json');
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', configPath, '--cache-path', customCache, '--dry-run'],
-    });
-    expect(result).toBe(0);
-    const { result: result2 } = await runCommand(main, {
-      rawArgs: ['--config', configPath, '--no-cache', '--dry-run'],
-    });
-    expect(result2).toBe(0);
+    expect(await runCli(['--config', configPath, '--cache-path', customCache, '--dry-run'])).toBe(
+      0,
+    );
+    expect(await runCli(['--config', configPath, '--no-cache', '--dry-run'])).toBe(0);
   });
 });
 
@@ -307,12 +280,9 @@ describe('--report-output', () => {
     await expect(access(out)).resolves.toBeUndefined();
   });
 
-  it('is wired through citty as --report-output', async () => {
+  it('is wired through commander as --report-output', async () => {
     const out = path.join(dir, 'cli-report.json');
-    const { result } = await runCommand(main, {
-      rawArgs: ['--config', configPath, '--report-output', out, '--dry-run'],
-    });
-    expect(result).toBe(0);
+    expect(await runCli(['--config', configPath, '--report-output', out, '--dry-run'])).toBe(0);
     await expect(access(out)).resolves.toBeUndefined();
   });
 });
