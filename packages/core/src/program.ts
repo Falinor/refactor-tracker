@@ -8,14 +8,16 @@ export function buildProgram(version: string): Command {
     .description(
       'Run configurable shell detections to track and report technical-refactor progress.',
     )
-    .version(version);
+    // `-v, --version` (not commander's default `-V`) to match the pre-migration citty behavior.
+    .version(version, '-v, --version');
 
   // Root and the run/init subcommands share option names (e.g. -c/--config); without this the
   // root would swallow options meant for a subcommand. Parent options must precede the subcommand.
   program.enablePositionalOptions();
 
   configureRun(program); // bare `refactor-tracker [flags]` = detection (default action)
-  configureRun(program.command('run')); // explicit `run` alias (same options + action)
+  // Subcommands don't inherit the root's --version, so give each its own.
+  configureRun(program.command('run')).version(version, '-v, --version');
   configureInitCommand(program.command('init'), version);
 
   return program;

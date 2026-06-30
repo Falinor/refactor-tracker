@@ -11,7 +11,7 @@ import {
 import { runCli } from './cli-helper.js';
 
 afterEach(() => {
-  process.exitCode = 0; // createInitCommand sets exitCode on error paths
+  process.exitCode = 0; // the init action sets exitCode on error paths; reset between tests
 });
 
 const SCHEMA = 'https://cdn.jsdelivr.net/npm/refactor-tracker@9.9.9/schema.json';

@@ -153,6 +153,7 @@ export const clackPrompter: InitPrompter = {
 export function configureInitCommand(cmd: Command, version: string): Command {
   return cmd
     .description('Scaffold a .refactor-tracker.yml config file')
+    .version(version, '-v, --version')
     .option('-c, --config <path>', 'Path for the generated config')
     .option('--reporter <type>', 'Default reporter: stdout | json | markdown | html | none')
     .option('-y, --yes', 'Skip prompts; write defaults', false)

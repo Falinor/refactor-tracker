@@ -5,8 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { execute, parseReporterFlag } from '../src/main.js';
-import { buildProgram } from '../src/program.js';
-import { runCli } from './cli-helper.js';
+import { runCli, captureCli } from './cli-helper.js';
 import { readCache, writeCache } from '../src/cache.js';
 import type { Config } from '../src/config.js';
 import type { Report } from '../src/types.js';
@@ -73,15 +72,19 @@ describe('commander wiring', () => {
     expect(await runCli(['--config', configPath, '--fail-on-regression', '--dry-run'])).toBe(1);
   });
 
-  it('renders --version with the package version', async () => {
-    const out: string[] = [];
-    const program = buildProgram('9.9.9')
-      .exitOverride()
-      .configureOutput({ writeOut: (s) => out.push(s), writeErr: () => {} });
-    await expect(program.parseAsync(['--version'], { from: 'user' })).rejects.toMatchObject({
-      code: 'commander.version',
-    });
-    expect(out.join('')).toContain('9.9.9');
+  it('renders --version and -v on the root and every subcommand', async () => {
+    for (const args of [
+      ['--version'],
+      ['-v'],
+      ['run', '--version'],
+      ['run', '-v'],
+      ['init', '--version'],
+      ['init', '-v'],
+    ]) {
+      const { code, out } = await captureCli(args);
+      expect(out, `args: ${args.join(' ')}`).toContain('9.9.9');
+      expect(code, `args: ${args.join(' ')}`).toBe(0);
+    }
   });
 
   it('runs detection under the explicit `run` alias', async () => {
