@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .refactor-tracker-cache.json
+.refactor-tracker-state.json
 *.log
 .claude/settings.local.json
 .superpowers/
