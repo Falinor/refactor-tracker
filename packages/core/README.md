@@ -98,7 +98,9 @@ Reporter config values that are exactly `$VAR` (e.g. `token: $MY_TOKEN`) are exp
 ## CLI
 
 ```
-refactor-tracker [options]
+refactor-tracker [options]          # run detections (the default command)
+refactor-tracker run [options]      # explicit alias for the default run (same flags)
+refactor-tracker init [options]     # scaffold a .refactor-tracker.yml
 
   -c, --config <path>          Path to config file (default: .refactor-tracker.yml)
   --dry-run                    Run detections and print the report as JSON; do not invoke reporters

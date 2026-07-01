@@ -1,6 +1,6 @@
 import { writeFile, access } from 'node:fs/promises';
 import path from 'node:path';
-import { defineCommand } from 'citty';
+import { Command } from '@commander-js/extra-typings';
 import { intro, outro, cancel, text, multiselect, select, confirm, isCancel } from '@clack/prompts';
 import { renderConfig, type ExampleKind, type ReporterKind } from './init-template.js';
 
@@ -150,36 +150,21 @@ export const clackPrompter: InitPrompter = {
   },
 };
 
-export function createInitCommand(version: string) {
-  return defineCommand({
-    meta: { name: 'init', version, description: 'Scaffold a .refactor-tracker.yml config file' },
-    args: {
-      config: {
-        type: 'string',
-        description: 'Path for the generated config',
-        alias: ['c'],
-        valueHint: 'path',
-      },
-      reporter: {
-        type: 'string',
-        description: 'Default reporter: stdout | json | markdown | html | none',
-        valueHint: 'type',
-      },
-      yes: {
-        type: 'boolean',
-        description: 'Skip prompts; write defaults',
-        alias: ['y'],
-        default: false,
-      },
-      force: { type: 'boolean', description: 'Overwrite an existing config file', default: false },
-    },
-    async run({ args }) {
+export function configureInitCommand(cmd: Command, version: string): Command {
+  return cmd
+    .description('Scaffold a .refactor-tracker.yml config file')
+    .version(version, '-v, --version')
+    .option('-c, --config <path>', 'Path for the generated config')
+    .option('--reporter <type>', 'Default reporter: stdout | json | markdown | html | none')
+    .option('-y, --yes', 'Skip prompts; write defaults', false)
+    .option('--force', 'Overwrite an existing config file', false)
+    .action(async (opts) => {
       const schemaUrl = `https://cdn.jsdelivr.net/npm/refactor-tracker@${version}/schema.json`;
       const isTTY = !!process.stdout.isTTY;
-      const interactive = isTTY && !args.yes;
+      const interactive = isTTY && !opts.yes;
       if (interactive) intro('refactor-tracker init');
       try {
-        const options = await gatherOptions(args as InitArgs, { prompter: clackPrompter, isTTY });
+        const options = await gatherOptions(opts as InitArgs, { prompter: clackPrompter, isTTY });
         const result = await runInit(options, {
           cwd: process.cwd(),
           schemaUrl,
@@ -188,24 +173,21 @@ export function createInitCommand(version: string) {
         });
         if (!result.wrote) {
           if (interactive) cancel('Cancelled — no file written.');
-          return 0;
+          return;
         }
         const msg = `Wrote ${options.configPath}. Run \`refactor-tracker\` to see your first report.`;
         if (interactive) outro(msg);
         else console.log(msg);
-        return 0;
       } catch (err) {
         if (err instanceof InitCancelled) {
           cancel('Cancelled — no file written.');
           process.exitCode = 130;
-          return 130;
+          return;
         }
         const message = err instanceof Error ? err.message : String(err);
         if (interactive) cancel(message);
         else console.error(message);
         process.exitCode = 1;
-        return 1;
       }
-    },
-  });
+    });
 }
