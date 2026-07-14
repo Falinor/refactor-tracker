@@ -26,7 +26,7 @@ import { URL as URL$1 } from "url";
 import os$1, { EOL as EOL$1, tmpdir } from "node:os";
 import process$1 from "node:process";
 import https from "node:https";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import * as buffer$1 from "buffer";
 import { Buffer as Buffer$1 } from "buffer";
 import fs from "node:fs";
@@ -65282,39 +65282,41 @@ function getOctokit(token, options, ...additionalPlugins) {
 //#endregion
 //#region src/cache.ts
 const PERSISTED_FILES = [".refactor-tracker-cache.json", ".refactor-tracker-state.json"];
-function cacheKey(workingDirectory) {
-	return `refactor-tracker-${process.platform}-${workingDirectory}-main`;
+function baseDir(workingDirectory, configPath) {
+	return dirname(resolve(workingDirectory, configPath));
 }
-function cachePaths(workingDirectory) {
-	return PERSISTED_FILES.map((f) => join(workingDirectory, f));
+function cacheKey(workingDirectory, configPath) {
+	return `refactor-tracker-${process.platform}-${baseDir(workingDirectory, configPath)}-main`;
 }
-async function restoreCache(workingDirectory) {
-	const key = cacheKey(workingDirectory);
-	const restoreKeys = [`refactor-tracker-${process.platform}-${workingDirectory}-`];
+function cachePaths(workingDirectory, configPath) {
+	return PERSISTED_FILES.map((f) => join(baseDir(workingDirectory, configPath), f));
+}
+async function restoreCache(workingDirectory, configPath) {
+	const key = cacheKey(workingDirectory, configPath);
+	const restoreKeys = [`refactor-tracker-${process.platform}-${baseDir(workingDirectory, configPath)}-`];
 	try {
-		const hit = await restoreCache$1(cachePaths(workingDirectory), key, restoreKeys);
+		const hit = await restoreCache$1(cachePaths(workingDirectory, configPath), key, restoreKeys);
 		if (hit) info(`Restored refactor-tracker cache from key: ${hit}`);
 		else info("No prior cache found — this run will produce the initial baseline.");
 	} catch (err) {
 		warning(`Could not restore cache: ${err instanceof Error ? err.message : String(err)}. Proceeding without a baseline.`);
 	}
 }
-async function saveCache(workingDirectory) {
+async function saveCache(workingDirectory, configPath) {
 	if (!isDefaultBranchPush()) {
 		info("Not a push to the default branch — skipping cache save.");
 		return;
 	}
-	const key = cacheKey(workingDirectory);
+	const key = cacheKey(workingDirectory, configPath);
 	try {
-		await saveCache$1(cachePaths(workingDirectory), key);
+		await saveCache$1(cachePaths(workingDirectory, configPath), key);
 		info(`Saved refactor-tracker cache under key: ${key}`);
 	} catch (err) {
-		const msg = err instanceof Error ? err.message : String(err);
-		if (msg.includes("already exists")) {
+		if (err instanceof ReserveCacheError) {
 			info("A cache for this key already exists — nothing to save.");
 			return;
 		}
-		warning(`Could not save cache: ${msg}`);
+		warning(`Could not save cache: ${err instanceof Error ? err.message : String(err)}`);
 	}
 }
 function isDefaultBranchPush() {
@@ -65352,13 +65354,18 @@ function execChild(cmd, args, cwd) {
 	});
 }
 //#endregion
+//#region src/report.ts
+function totalDelta(report) {
+	return report.tasks.reduce((sum, t) => sum + (t.delta ?? 0), 0);
+}
+//#endregion
 //#region src/comment.ts
 const STICKY_MARKER = "<!-- refactor-tracker:sticky -->";
 function formatComment(report) {
 	const moved = report.tasks.filter((t) => t.delta !== null && t.delta !== 0);
-	const totalDelta = report.tasks.reduce((sum, t) => sum + (t.delta ?? 0), 0);
-	const deltaSign = totalDelta > 0 ? "+" : "";
-	const summary = report.hasChanges ? `**refactor-tracker** — ${moved.length} of ${report.tasks.length} tracked refactors moved (${deltaSign}${totalDelta} total)` : `**refactor-tracker** — no movement across ${report.tasks.length} tracked refactors`;
+	const delta = totalDelta(report);
+	const deltaSign = delta > 0 ? "+" : "";
+	const summary = moved.length > 0 ? `**refactor-tracker** — ${moved.length} of ${report.tasks.length} tracked refactors moved (${deltaSign}${delta} total)` : `**refactor-tracker** — no movement across ${report.tasks.length} tracked refactors`;
 	return [
 		STICKY_MARKER,
 		summary,
@@ -65394,13 +65401,12 @@ async function postComment(body, token) {
 	}
 	const octokit = getOctokit(token);
 	const { owner, repo } = ctx.repo;
-	const { data: existing } = await octokit.rest.issues.listComments({
+	const sticky = (await octokit.paginate(octokit.rest.issues.listComments, {
 		owner,
 		repo,
 		issue_number: prNumber,
 		per_page: 100
-	});
-	const sticky = existing.find((c) => c.body?.includes(STICKY_MARKER));
+	})).find((c) => c.body?.includes(STICKY_MARKER));
 	if (sticky) {
 		await octokit.rest.issues.updateComment({
 			owner,
@@ -65436,7 +65442,7 @@ function readInputs() {
 //#endregion
 //#region src/outputs.ts
 function setOutputs(report) {
-	setOutput("delta", report.tasks.reduce((sum, t) => sum + (t.delta ?? 0), 0));
+	setOutput("delta", totalDelta(report));
 	setOutput("total", report.tasks.length);
 	setOutput("has-changes", report.hasChanges ? "true" : "false");
 	setOutput("report-json", JSON.stringify(report));
@@ -65449,11 +65455,11 @@ function hasRegression(report) {
 async function run() {
 	try {
 		const inputs = readInputs();
-		if (inputs.cacheStrategy === "actions-cache") await restoreCache(inputs.workingDirectory);
+		if (inputs.cacheStrategy === "actions-cache") await restoreCache(inputs.workingDirectory, inputs.configPath);
 		const report = await runRefactorTracker(inputs);
 		setOutputs(report);
 		if (inputs.commentOnPr) await postComment(formatComment(report), inputs.githubToken);
-		if (inputs.cacheStrategy === "actions-cache") await saveCache(inputs.workingDirectory);
+		if (inputs.cacheStrategy === "actions-cache") await saveCache(inputs.workingDirectory, inputs.configPath);
 		if (inputs.failOnRegression && hasRegression(report)) setFailed("A tracked refactor's done count decreased vs the baseline.");
 	} catch (err) {
 		setFailed(err instanceof Error ? err.message : String(err));

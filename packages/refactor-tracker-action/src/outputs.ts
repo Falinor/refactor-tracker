@@ -1,9 +1,9 @@
 import * as core from '@actions/core';
 import type { Report } from 'refactor-tracker';
+import { totalDelta } from './report.js';
 
 export function setOutputs(report: Report): void {
-  const totalDelta = report.tasks.reduce((sum, t) => sum + (t.delta ?? 0), 0);
-  core.setOutput('delta', totalDelta);
+  core.setOutput('delta', totalDelta(report));
   core.setOutput('total', report.tasks.length);
   core.setOutput('has-changes', report.hasChanges ? 'true' : 'false');
   core.setOutput('report-json', JSON.stringify(report));

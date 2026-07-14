@@ -1,17 +1,19 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import type { Report, TaskResult } from 'refactor-tracker';
+import { totalDelta as sumDelta } from './report.js';
 
 export const STICKY_MARKER = '<!-- refactor-tracker:sticky -->';
 
 export function formatComment(report: Report): string {
   const moved = report.tasks.filter((t) => t.delta !== null && t.delta !== 0);
-  const totalDelta = report.tasks.reduce((sum, t) => sum + (t.delta ?? 0), 0);
-  const deltaSign = totalDelta > 0 ? '+' : '';
+  const delta = sumDelta(report);
+  const deltaSign = delta > 0 ? '+' : '';
 
-  const summary = report.hasChanges
-    ? `**refactor-tracker** — ${moved.length} of ${report.tasks.length} tracked refactors moved (${deltaSign}${totalDelta} total)`
-    : `**refactor-tracker** — no movement across ${report.tasks.length} tracked refactors`;
+  const summary =
+    moved.length > 0
+      ? `**refactor-tracker** — ${moved.length} of ${report.tasks.length} tracked refactors moved (${deltaSign}${delta} total)`
+      : `**refactor-tracker** — no movement across ${report.tasks.length} tracked refactors`;
 
   return [
     STICKY_MARKER,
@@ -49,7 +51,7 @@ export async function postComment(body: string, token: string): Promise<void> {
   const octokit = github.getOctokit(token);
   const { owner, repo } = ctx.repo;
 
-  const { data: existing } = await octokit.rest.issues.listComments({
+  const existing = await octokit.paginate(octokit.rest.issues.listComments, {
     owner,
     repo,
     issue_number: prNumber,

@@ -10,7 +10,7 @@ async function run(): Promise<void> {
     const inputs = readInputs();
 
     if (inputs.cacheStrategy === 'actions-cache') {
-      await restoreCache(inputs.workingDirectory);
+      await restoreCache(inputs.workingDirectory, inputs.configPath);
     }
 
     const report = await runRefactorTracker(inputs);
@@ -22,7 +22,7 @@ async function run(): Promise<void> {
     }
 
     if (inputs.cacheStrategy === 'actions-cache') {
-      await saveCache(inputs.workingDirectory);
+      await saveCache(inputs.workingDirectory, inputs.configPath);
     }
 
     if (inputs.failOnRegression && hasRegression(report)) {

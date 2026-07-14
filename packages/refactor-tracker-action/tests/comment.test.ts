@@ -58,6 +58,16 @@ describe('formatComment', () => {
     expect(body).toContain('(+5 total)');
   });
 
+  it('shows a no-movement summary when hasChanges is true but nothing moved (e.g. a newly registered task)', () => {
+    const body = formatComment(
+      report({
+        tasks: [task({ delta: null }), task({ id: 'b', name: 'B', delta: 0 })],
+        hasChanges: true,
+      }),
+    );
+    expect(body).toContain('no movement');
+  });
+
   it('shows a negative summary on regression', () => {
     const body = formatComment(
       report({
