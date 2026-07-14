@@ -1,5 +1,10 @@
 node_modules/
 dist/
+# The GitHub Action ships its compiled entrypoint; keep just that bundle tracked despite the
+# global dist/ ignore (dist/ excludes the dir, so re-include it then narrow to the one built file).
+!packages/refactor-tracker-action/dist/
+packages/refactor-tracker-action/dist/*
+!packages/refactor-tracker-action/dist/index.js
 .refactor-tracker-cache.json
 .refactor-tracker-state.json
 *.log

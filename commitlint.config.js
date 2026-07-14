@@ -21,6 +21,8 @@ export default {
         'json-reporter',
         'markdown-reporter',
         'html-reporter',
+        // Packages
+        'action',
         // Meta
         'readme',
         'deps',

@@ -10,5 +10,5 @@
     "node": true,
     "es2024": true
   },
-  "ignorePatterns": ["examples/**"]
+  "ignorePatterns": ["examples/**", "**/dist/**"]
 }
