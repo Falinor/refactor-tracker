@@ -1,0 +1,49 @@
+{
+  "name": "refactor-tracker-action",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GitHub Action wrapper for refactor-tracker — runs detections in CI, persists cache and state, comments deltas on PRs.",
+  "keywords": [
+    "ci",
+    "dashboard",
+    "github-action",
+    "refactor",
+    "refactor-tracker",
+    "tech-debt"
+  ],
+  "homepage": "https://github.com/Falinor/refactor-tracker/tree/main/packages/refactor-tracker-action#readme",
+  "bugs": {
+    "url": "https://github.com/Falinor/refactor-tracker/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Andrea Gueugnaut",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Falinor/refactor-tracker.git",
+    "directory": "packages/refactor-tracker-action"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "action.yml",
+    "dist"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "dev": "vitest"
+  },
+  "dependencies": {
+    "@actions/cache": "6.2.0",
+    "@actions/core": "3.0.1",
+    "@actions/github": "9.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "refactor-tracker": "workspace:*",
+    "tsdown": "0.22.7",
+    "typescript": "7.0.2",
+    "vitest": "4.1.10"
+  }
+}
