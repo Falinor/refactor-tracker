@@ -62,6 +62,7 @@
   "dependencies": {
     "@clack/prompts": "^1.6.0",
     "@commander-js/extra-typings": "^15.0.0",
+    "badge-maker": "6.0.0",
     "commander": "^15.0.0",
     "eta": "^4.6.0",
     "execa": "9.6.1",
