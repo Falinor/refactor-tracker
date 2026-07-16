@@ -6,6 +6,7 @@ import { StdoutReporter } from './stdout.js';
 import { JsonReporter } from './json.js';
 import { MarkdownReporter } from './markdown.js';
 import { HtmlReporter } from './html.js';
+import { BadgeReporter } from './badge.js';
 
 export async function createReporters(
   configs: ReporterConfig[] | undefined,
@@ -28,6 +29,9 @@ export async function createReporters(
         break;
       case 'html':
         reporters.push(new HtmlReporter(resolveOutput(config.output as string)));
+        break;
+      case 'badge':
+        reporters.push(new BadgeReporter(resolveOutput(config.output as string)));
         break;
       case 'custom': {
         const hasModule = typeof config.module === 'string' && config.module.length > 0;
