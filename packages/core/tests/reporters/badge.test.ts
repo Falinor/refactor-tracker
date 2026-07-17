@@ -84,13 +84,28 @@ describe('BadgeReporter', () => {
     }
   });
 
-  it('renders a lightgrey "no refactors tracked" badge when total is zero', async () => {
+  it('renders a lightgrey "no refactors tracked" badge when no tasks are tracked', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'rt-badge-'));
     try {
       const out = path.join(dir, 'badge.svg');
       await new BadgeReporter(out).report(report([]));
       const svg = await readFile(out, 'utf8');
       expect(svg).toContain('no refactors tracked');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('renders a 0% badge, not "no refactors tracked", when tracked tasks sum to 0/0', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'rt-badge-'));
+    try {
+      const out = path.join(dir, 'badge.svg');
+      await new BadgeReporter(out).report(
+        report([task({ id: 'a', done: 0, total: 0, percentage: 0 })]),
+      );
+      const svg = await readFile(out, 'utf8');
+      expect(svg).toContain('0%');
+      expect(svg).not.toContain('no refactors tracked');
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

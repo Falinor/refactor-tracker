@@ -6,7 +6,7 @@ import { renderConfig, type ExampleKind, type ReporterKind } from './init-templa
 
 export const DEFAULT_CONFIG_PATH = '.refactor-tracker.yml';
 const ALL_EXAMPLES: ExampleKind[] = ['counts', 'remaining', 'binary'];
-const REPORTER_KINDS: ReporterKind[] = ['stdout', 'json', 'markdown', 'html', 'none'];
+const REPORTER_KINDS: ReporterKind[] = ['stdout', 'json', 'markdown', 'html', 'badge', 'none'];
 
 export interface InitOptions {
   configPath: string;
@@ -139,6 +139,7 @@ export const clackPrompter: InitPrompter = {
           { value: 'json', label: 'json file' },
           { value: 'markdown', label: 'markdown file' },
           { value: 'html', label: 'html file' },
+          { value: 'badge', label: 'badge (SVG)' },
           { value: 'none', label: 'none (configure later)' },
         ],
         initialValue: 'stdout',
@@ -155,7 +156,7 @@ export function configureInitCommand(cmd: Command, version: string): Command {
     .description('Scaffold a .refactor-tracker.yml config file')
     .version(version, '-v, --version')
     .option('-c, --config <path>', 'Path for the generated config')
-    .option('--reporter <type>', 'Default reporter: stdout | json | markdown | html | none')
+    .option('--reporter <type>', 'Default reporter: stdout | json | markdown | html | badge | none')
     .option('-y, --yes', 'Skip prompts; write defaults', false)
     .option('--force', 'Overwrite an existing config file', false)
     .action(async (opts) => {

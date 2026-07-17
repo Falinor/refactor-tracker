@@ -4,6 +4,7 @@ import { Eta } from 'eta';
 import type { Report, Reporter } from '../types.js';
 import { groupTasksByTag } from '../grouping.js';
 import { formatDate } from './format.js';
+import { aggregateReport } from './aggregate.js';
 
 const TEMPLATE = `<!DOCTYPE html>
 <html lang="en">
@@ -269,9 +270,11 @@ function toTaskView(t: Report['tasks'][number], nowIso: string): HtmlTaskView {
 }
 
 function buildView(report: Report): HtmlView {
-  const grandDone = report.tasks.reduce((sum, t) => sum + t.done, 0);
-  const grandTotal = report.tasks.reduce((sum, t) => sum + t.total, 0);
-  const overallPercentage = grandTotal === 0 ? 0 : Math.round((grandDone / grandTotal) * 100);
+  const {
+    done: grandDone,
+    total: grandTotal,
+    percentage: overallPercentage,
+  } = aggregateReport(report);
   const taskGroups = groupTasksByTag(report.tasks);
   const flat = taskGroups.length === 1 && taskGroups[0].tag === null;
   const nowIso = report.timestamp;

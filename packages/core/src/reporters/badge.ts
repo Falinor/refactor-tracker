@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { makeBadge } from 'badge-maker';
 import type { Reporter, Report } from '../types.js';
+import { aggregateReport } from './aggregate.js';
 
 const LABEL = 'refactor-tracker';
 
@@ -17,14 +18,11 @@ export class BadgeReporter implements Reporter {
   constructor(readonly output: string) {}
 
   async report(report: Report): Promise<void> {
-    const done = report.tasks.reduce((sum, t) => sum + t.done, 0);
-    const total = report.tasks.reduce((sum, t) => sum + t.total, 0);
-
     let svg: string;
-    if (total === 0) {
+    if (report.tasks.length === 0) {
       svg = makeBadge({ label: LABEL, message: 'no refactors tracked', color: 'lightgrey' });
     } else {
-      const percentage = Math.round((done / total) * 100);
+      const { percentage } = aggregateReport(report);
       svg = makeBadge({ label: LABEL, message: `${percentage}%`, color: colorFor(percentage) });
     }
 

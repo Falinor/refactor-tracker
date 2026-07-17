@@ -190,14 +190,14 @@ These are presentation concerns: they apply to `stdout`, `markdown`, `html`, and
 
 ## Reporters
 
-| Reporter   | Output                                                                                      |
-| ---------- | ------------------------------------------------------------------------------------------- |
-| `stdout`   | Progress table to the terminal (default when no reporters are configured)                   |
-| `json`     | The full report object to a file (`output: <path>` required)                                |
-| `markdown` | A progress table to a `.md` file (`output: <path>` required)                                |
-| `html`     | A self-contained HTML page with progress bars to a `.html` file (`output: <path>` required) |
+| Reporter   | Output                                                                                         |
+| ---------- | ---------------------------------------------------------------------------------------------- |
+| `stdout`   | Progress table to the terminal (default when no reporters are configured)                      |
+| `json`     | The full report object to a file (`output: <path>` required)                                   |
+| `markdown` | A progress table to a `.md` file (`output: <path>` required)                                   |
+| `html`     | A self-contained HTML page with progress bars to a `.html` file (`output: <path>` required)    |
 | `badge`    | A static SVG badge with the aggregate progress %, to a `.svg` file (`output: <path>` required) |
-| `custom`   | Your own module — file path or npm package; extension point for Slack, Linear, Notion, etc. |
+| `custom`   | Your own module — file path or npm package; extension point for Slack, Linear, Notion, etc.    |
 
 ### Badge reporter
 
