@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.0](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.7.0...refactor-tracker-v0.8.0) (2026-07-17)
+
+
+### Features
+
+* **core:** add badge reporter ([76f3007](https://github.com/Falinor/refactor-tracker/commit/76f3007b63cd0c595f280d0e496260d233a10cb0))
+* **reporters:** add badge reporter ([c9f03bd](https://github.com/Falinor/refactor-tracker/commit/c9f03bdae2b830f08fc0c3294a9f3c05de037775))
+* **reporters:** register badge reporter in createReporters ([eb60b79](https://github.com/Falinor/refactor-tracker/commit/eb60b790a6eae36b006a7b03a64d64e5cae00e88))
+
+
+### Bug Fixes
+
+* **reporters:** register badge reporter with CLI/init and correct 0/0 handling ([0f4f990](https://github.com/Falinor/refactor-tracker/commit/0f4f9900b185ff709bea863b9d7f05fa5cd3ddc1))
+
 ## [0.7.0](https://github.com/Falinor/refactor-tracker/compare/refactor-tracker-v0.6.0...refactor-tracker-v0.7.0) (2026-07-01)
 
 
