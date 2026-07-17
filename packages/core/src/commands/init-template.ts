@@ -1,5 +1,5 @@
 export type ExampleKind = 'counts' | 'remaining' | 'binary';
-export type ReporterKind = 'stdout' | 'json' | 'markdown' | 'html' | 'none';
+export type ReporterKind = 'stdout' | 'json' | 'markdown' | 'html' | 'badge' | 'none';
 
 export interface RenderConfigOptions {
   schemaUrl: string;
@@ -28,10 +28,11 @@ const EXAMPLE_BLOCKS: Record<ExampleKind, string> = {
       command: "! grep -rq 'TODO' src"`,
 };
 
-const DEFAULT_OUTPUT: Record<'json' | 'markdown' | 'html', string> = {
+const DEFAULT_OUTPUT: Record<'json' | 'markdown' | 'html' | 'badge', string> = {
   json: 'refactor-progress.json',
   markdown: 'refactor-progress.md',
   html: 'refactor-progress.html',
+  badge: 'badge.svg',
 };
 
 const COMMENTED_REPORTERS = `# reporters:        # default is stdout; uncomment to add file/HTML outputs.

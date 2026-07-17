@@ -190,13 +190,30 @@ These are presentation concerns: they apply to `stdout`, `markdown`, `html`, and
 
 ## Reporters
 
-| Reporter   | Output                                                                                      |
-| ---------- | ------------------------------------------------------------------------------------------- |
-| `stdout`   | Progress table to the terminal (default when no reporters are configured)                   |
-| `json`     | The full report object to a file (`output: <path>` required)                                |
-| `markdown` | A progress table to a `.md` file (`output: <path>` required)                                |
-| `html`     | A self-contained HTML page with progress bars to a `.html` file (`output: <path>` required) |
-| `custom`   | Your own module — file path or npm package; extension point for Slack, Linear, Notion, etc. |
+| Reporter   | Output                                                                                         |
+| ---------- | ---------------------------------------------------------------------------------------------- |
+| `stdout`   | Progress table to the terminal (default when no reporters are configured)                      |
+| `json`     | The full report object to a file (`output: <path>` required)                                   |
+| `markdown` | A progress table to a `.md` file (`output: <path>` required)                                   |
+| `html`     | A self-contained HTML page with progress bars to a `.html` file (`output: <path>` required)    |
+| `badge`    | A static SVG badge with the aggregate progress %, to a `.svg` file (`output: <path>` required) |
+| `custom`   | Your own module — file path or npm package; extension point for Slack, Linear, Notion, etc.    |
+
+### Badge reporter
+
+Emits a static SVG badge — rendered with [`badge-maker`](https://www.npmjs.com/package/badge-maker), the same library shields.io uses — showing the sum of `done`/`total` across every tracked refactor as one percentage. The label is always `refactor-tracker`; color follows fixed bands: red below 50%, yellow 50–79%, green 80–99%, bright green at 100%. No live service involved — the file is a plain static artifact, like the other file-based reporters.
+
+```yaml
+reporters:
+  - type: badge
+    output: badge.svg
+```
+
+Commit the generated file and embed it in your own README:
+
+```markdown
+![refactor-tracker](./badge.svg)
+```
 
 ### Custom reporters
 

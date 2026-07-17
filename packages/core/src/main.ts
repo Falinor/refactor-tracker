@@ -20,7 +20,7 @@ export interface ExecuteOptions {
   cachePath?: string;
 }
 
-const FILE_REPORTERS = new Set(['json', 'markdown', 'html']);
+const FILE_REPORTERS = new Set(['json', 'markdown', 'html', 'badge']);
 
 export function parseReporterFlag(raw: string): ReporterConfig {
   const colon = raw.indexOf(':');
@@ -38,7 +38,9 @@ export function parseReporterFlag(raw: string): ReporterConfig {
     }
     return { type, output };
   }
-  throw new Error(`Unknown --reporter type: ${type}. Expected: stdout | json | markdown | html.`);
+  throw new Error(
+    `Unknown --reporter type: ${type}. Expected: stdout | json | markdown | html | badge.`,
+  );
 }
 
 export async function execute(options: ExecuteOptions): Promise<number> {
@@ -110,7 +112,7 @@ export function configureRun(cmd: Command): Command {
     )
     .option(
       '--reporter <type[:path]>',
-      'Override configured reporters (repeatable): stdout, json:<path>, markdown:<path>, html:<path>',
+      'Override configured reporters (repeatable): stdout, json:<path>, markdown:<path>, html:<path>, badge:<path>',
       collect,
       [],
     )
